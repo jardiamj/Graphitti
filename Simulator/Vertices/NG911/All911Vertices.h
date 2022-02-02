@@ -9,7 +9,7 @@
  *
  * The data-centric class uses a container structure for all vertices.
  *
- * The container holds vertex parameters for all vertices.
+ * The container holds 911 parameters for all vertices.
  * Each kind of vertex parameter is stored in a 1D array, of which length
  * is number of all vertices. Each array of a vertex parameter is pointed to by a
  * corresponding member variable of the vertex parameter in the class.
@@ -52,7 +52,7 @@ public:
 
    ///  Outputs state of the vertex chosen as a string.
    ///
-   ///  @param  index   index of the vertex (in vertices) to output info from.
+   ///  @param  index   vertex index (in vertices) to output info from.
    ///  @return the complete state of the vertex.
    virtual string toString(const int index) const;
 

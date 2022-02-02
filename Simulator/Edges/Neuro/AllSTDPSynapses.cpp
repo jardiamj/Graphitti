@@ -3,7 +3,7 @@
  * 
  * @ingroup Simulator/Edges
  *
- * @brief A container of all STDP synapse data
+ * @brief A container of all STDP edge data
  */
 
 #include "AllSTDPSynapses.h"
@@ -92,7 +92,7 @@ void AllSTDPSynapses::setupEdges() {
 ///  Setup the internal structure of the class (allocate memories and initialize them).
 ///
 ///  @param  numVertices   Total number of vertices in the network.
-///  @param  maxEdges  Maximum number of synapses per neuron.
+///  @param  maxEdges  Maximum number of edges per vertex.
 void AllSTDPSynapses::setupEdges(const int numVertices, const int maxEdges) {
    AllSpikingSynapses::setupEdges(numVertices, maxEdges);
 
@@ -116,9 +116,9 @@ void AllSTDPSynapses::setupEdges(const int numVertices, const int maxEdges) {
    }
 }
 
-///  Initializes the queues for the Synapse.
+///  Initializes the queues for the Edge.
 ///
-///  @param  iEdg   index of the synapse to set.
+///  @param  iEdg   index of the edge to set.
 void AllSTDPSynapses::initSpikeQueue(const BGSIZE iEdg) {
    AllSpikingSynapses::initSpikeQueue(iEdg);
 
@@ -174,10 +174,10 @@ void AllSTDPSynapses::printParameters() const {
                    );
 }
 
-///  Sets the data for Synapse to input's data.
+///  Sets the data for Edge to input's data.
 ///
 ///  @param  input  istream to read from.
-///  @param  iEdg   Index of the synapse to set.
+///  @param  iEdg   Index of the edge to set.
 void AllSTDPSynapses::readEdge(istream &input, const BGSIZE iEdg) {
    AllSpikingSynapses::readEdge(input, iEdg);
 
@@ -212,10 +212,10 @@ void AllSTDPSynapses::readEdge(istream &input, const BGSIZE iEdg) {
    input.ignore();
 }
 
-///  Write the synapse data to the stream.
+///  Write the edge data to the stream.
 ///
 ///  @param  output  stream to print out to.
-///  @param  iEdg    Index of the synapse to print out.
+///  @param  iEdg    Index of the edge to print out.
 void AllSTDPSynapses::writeEdge(ostream &output, const BGSIZE iEdg) const {
    AllSpikingSynapses::writeEdge(output, iEdg);
 
@@ -237,21 +237,21 @@ void AllSTDPSynapses::writeEdge(ostream &output, const BGSIZE iEdg) const {
 
 ///  Reset time varying state vars and recompute decay.
 ///
-///  @param  iEdg            Index of the synapse to set.
+///  @param  iEdg            Index of the edge to set.
 ///  @param  deltaT          Inner simulation step duration
 void AllSTDPSynapses::resetEdge(const BGSIZE iEdg, const BGFLOAT deltaT) {
    AllSpikingSynapses::resetEdge(iEdg, deltaT);
 }
 
-///  Create a Synapse and connect it to the model.
+///  Create a Edge and connect it to the model.
 ///
-///  @param  synapses    The synapse list to reference.
-///  @param  iEdg        Index of the synapse to set.
+///  @param  edges    The edge list to reference.
+///  @param  iEdg        Index of the edge to set.
 ///  @param  srcVertex   Coordinates of the source Neuron.
 ///  @param  destVertex  Coordinates of the destination Neuron.
 ///  @param  sumPoint    Summation point address.
 ///  @param  deltaT      Inner simulation step duration.
-///  @param  type        Type of the Synapse to create.
+///  @param  type        Type of the Edge to create.
 void AllSTDPSynapses::createEdge(const BGSIZE iEdg, int srcVertex, int destVertex, BGFLOAT *sumPoint,
                                     const BGFLOAT deltaT, edgeType type) {
 
@@ -270,25 +270,25 @@ void AllSTDPSynapses::createEdge(const BGSIZE iEdg, int srcVertex, int destVerte
    tauspre_[iEdg] = tauspre_E_;
    taupos_[iEdg] = taupos_E_;
    tauneg_[iEdg] = tauneg_E_;
-   Wex_[iEdg] = Wex_E_ ;// this is based on overlap of 2 neurons' radii (r=4) of outgrowth, scale it by SYNAPSE_STRENGTH_ADJUSTMENT.
+   Wex_[iEdg] = Wex_E_ ;// this is based on overlap of 2 vertices' radii (r=4) of outgrowth, scale it by SYNAPSE_STRENGTH_ADJUSTMENT.
    mupos_[iEdg] = 0;
    muneg_[iEdg] = 0;
 }
 
 #if !defined(USE_GPU)
 
-///  Advance one specific Synapse.
+///  Advance one specific Edge.
 ///
-///  @param  iEdg      Index of the Synapse to connect to.
-///  @param  neurons   The Neuron list to search from.
-void AllSTDPSynapses::advanceEdge(const BGSIZE iEdg, AllVertices *neurons) {
-   // If the synapse is inhibitory or its weight is zero, update synapse state using AllSpikingSynapses::advanceEdge method
+///  @param  iEdg      Index of the Edge to connect to.
+///  @param  vertices   The Neuron list to search from.
+void AllSTDPSynapses::advanceEdge(const BGSIZE iEdg, AllVertices *vertices) {
+   // If the edge is inhibitory or its weight is zero, update edge state using AllSpikingSynapses::advanceEdge method
    //LOG4CPLUS_DEBUG(edgeLogger_, "iEdg : " << iEdg );
    
    BGFLOAT &W = W_[iEdg];
    /*
    if (W <= 0.0) {
-      AllSpikingSynapses::advanceEdge(iEdg, neurons);
+      AllSpikingSynapses::advanceEdge(iEdg, vertices);
       return;
    }
     */
@@ -307,9 +307,9 @@ void AllSTDPSynapses::advanceEdge(const BGSIZE iEdg, AllVertices *neurons) {
       const int total_delay = totalDelay_[iEdg];
 
       BGFLOAT deltaT = Simulator::getInstance().getDeltaT();
-      AllSpikingNeurons *spNeurons = dynamic_cast<AllSpikingNeurons *>(neurons);
+      AllSpikingNeurons *spNeurons = dynamic_cast<AllSpikingNeurons *>(vertices);
 
-      // pre and post neurons index
+      // pre and post vertices index
       int idxPre = sourceVertexIndex_[iEdg];
       int idxPost = destVertexIndex_[iEdg];
       uint64_t spikeHistory, spikeHistory2;
@@ -444,15 +444,15 @@ BGFLOAT AllSTDPSynapses::synapticWeightModification(const BGSIZE iEdg, BGFLOAT s
 }
 
 
-///  Adjust synapse weight according to the Spike-timing-dependent synaptic modification 
+///  Adjust edge weight according to the Spike-timing-dependent synaptic modification 
 ///  induced by natural spike trains
 ///
-///  @param  iEdg        Index of the synapse to set.
+///  @param  iEdg        Index of the edge to set.
 ///  @param  delta       Pre/post synaptic spike interval.
 ///  @param  epost       Params for the rule given in Froemke and Dan (2002).
 ///  @param  epre        Params for the rule given in Froemke and Dan (2002).
-///  @param srcVertex Index of source neuron
-///  @param destVertex Index of destination neuron
+///  @param srcVertex    source vertex index
+///  @param destVertex   destination vertex index
 void AllSTDPSynapses::stdpLearning(const BGSIZE iEdg, double delta, double epost,
                                    double epre, int srcVertex, int destVertex) {
    BGFLOAT STDPgap = STDPgap_[iEdg];
@@ -476,7 +476,7 @@ void AllSTDPSynapses::stdpLearning(const BGSIZE iEdg, double delta, double epost
    //dw = 1.0 + dw * epre * epost;
    BGFLOAT dw = 1.0 + synapticWeightModification(iEdg, W, delta);   
    
-   // if scaling ratio is less than zero, set it to zero so this synapse, its
+   // if scaling ratio is less than zero, set it to zero so this edge, its
    // strength is always zero
    // TODO: Where is the code for this?
    
@@ -503,7 +503,7 @@ void AllSTDPSynapses::stdpLearning(const BGSIZE iEdg, double delta, double epost
 
 ///  Checks if there is an input spike in the queue (for back propagation).
 ///
-///  @param  iEdg   Index of the Synapse to connect to.
+///  @param  iEdg   Index of the Edge to connect to.
 ///  @return true if there is an input spike event.
 bool AllSTDPSynapses::isSpikeQueuePost(const BGSIZE iEdg) {
    uint32_t &delayQueue = delayQueuePost_[iEdg];
@@ -518,9 +518,9 @@ bool AllSTDPSynapses::isSpikeQueuePost(const BGSIZE iEdg) {
    return r;
 }
 
-///  Prepares Synapse for a spike hit (for back propagation).
+///  Prepares Edge for a spike hit (for back propagation).
 ///
-///  @param  iEdg   Index of the Synapse to connect to.
+///  @param  iEdg   Index of the Edge to connect to.
 void AllSTDPSynapses::postSpikeHit(const BGSIZE iEdg) {
    uint32_t &delay_queue = delayQueuePost_[iEdg];
    int &delayIdx = delayIndexPost_[iEdg];
@@ -542,8 +542,8 @@ void AllSTDPSynapses::postSpikeHit(const BGSIZE iEdg) {
 
 #endif // !defined(USE_GPU)
 
-///  Check if the back propagation (notify a spike event to the pre neuron)
-///  is allowed in the synapse class.
+///  Check if the back propagation (notify a spike event to the pre vertex)
+///  is allowed in the edge class.
 ///
 ///  @retrun true if the back propagation is allowed.
 bool AllSTDPSynapses::allowBackPropagation() {

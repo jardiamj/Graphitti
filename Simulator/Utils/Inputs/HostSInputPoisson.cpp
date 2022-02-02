@@ -77,7 +77,7 @@ int chunk_size = psi->totalVertices / omp_get_max_threads();
             // convert isi from msec to steps
             nISIs[neuronIndex] = static_cast<int>( (isi / 1000) / Simulator::getInstance().getDeltaT() + 0.5 );
         }
-        // process synapse
+        // process edge
         edges_->advanceEdge(iEdg, nullptr);
     }
 }

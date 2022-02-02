@@ -5,10 +5,10 @@
  *
  * @brief An implementation for recording spikes history on xml file
  * 
- * The XmlRecorder provides a mechanism for recording neuron's layout, spikes history,
+ * The XmlRecorder provides a mechanism for recording vertex's layout, spikes history,
  * and compile history information on xml file:
- *     -# neuron's locations, and type map,
- *     -# individual neuron's spike rate in epochs,
+ *     -# vertex's locations, and type map,
+ *     -# individual vertex's spike rate in epochs,
  *     -# network wide burstiness index data in 1s bins,
  *     -# network wide spike count in 10ms bins.
  */
@@ -65,7 +65,7 @@ protected:
    // burstiness Histogram goes through the
    VectorMatrix burstinessHist_;
    
-   // spikes history - history of accumulated spikes count of all neurons (10 ms bin)
+   // spikes history - history of accumulated spikes count of all vertices (10 ms bin)
    VectorMatrix spikesHistory_;
 
    // TODO: There seems to be multiple copies of this in different classes...

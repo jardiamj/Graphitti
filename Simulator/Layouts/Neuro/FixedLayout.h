@@ -7,8 +7,8 @@
  *
  * The FixedLayout class maintains vertices locations (x, y coordinates), 
  * distance of every couple vertices,
- * vertices type map (distribution of excitatory and inhibitory neurons), and starter vertices map
- * (distribution of endogenously active neurons).  
+ * vertices type map (distribution of excitatory and inhibitory vertices), and starter vertices map
+ * (distribution of endogenously active vertices).  
  *
  * The FixedLayout class reads all layout information from parameter description file.
  */
@@ -37,7 +37,7 @@ public:
    virtual void generateVertexTypeMap(int numVertices) override;
 
    ///  Populates the starter map.
-   ///  Selects num_endogenously_active_neurons excitory neurons
+   ///  Selects num_endogenously_active_neurons excitory vertices
    ///  and converts them into starter vertices.
    ///
    ///  @param  numVertices number of vertices to have in the map.
@@ -46,10 +46,10 @@ public:
    /// Load member variables from configuration file. Registered to OperationManager as Operation::loadParameters
    virtual void loadParameters() override;
 
-   /// Returns the type of synapse at the given coordinates
-   /// @param    srcVertex  integer that points to a Neuron in the type map as a source.
-   /// @param    destVertex integer that points to a Neuron in the type map as a destination.
-   /// @return type of the synapse.
+   /// Returns the type of edge at the given coordinates
+   /// @param    srcVertex  source vertex index
+   /// @param    destVertex destination vertex index
+   /// @return type of the edge.
    virtual edgeType edgType(const int srcVertex, const int destVertex) override;
 };
 

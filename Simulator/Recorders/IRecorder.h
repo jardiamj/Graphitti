@@ -4,6 +4,10 @@
  * @ingroup Simulator/Recorders
  *
  * @brief An interface for recording spikes history
+ * 
+ * ToDo: Make IRecorder into just Recorder. 
+ * The Recorder class manages simulation data and is managed by Model. 
+ * 
  */
 
 #pragma once
@@ -42,13 +46,12 @@ public:
    virtual void term() = 0;
 
    /// Compile history information in every epoch
-   ///
-   /// @param[in] neurons   The entire list of neurons.
+   /// @param[in] vertices   The entire list of vertices.
    virtual void compileHistories(AllVertices &vertices) = 0;
 
    /// Writes simulation results to an output destination.
    ///
-   /// @param[in] neurons   The entire list of neurons.
+   /// @param[in] vertices   The entire list of vertices.
    virtual void saveSimData(const AllVertices &vertices) = 0;
 
    /// Prints loaded parameters to logging file.

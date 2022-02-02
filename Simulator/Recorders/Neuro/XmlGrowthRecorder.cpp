@@ -58,9 +58,9 @@ void XmlGrowthRecorder::getValues() {
 
 /// Compile history information in every epoch
 ///
-/// @param[in] neurons 	The entire list of neurons.
-void XmlGrowthRecorder::compileHistories(AllVertices &neurons) {
-   XmlRecorder::compileHistories(neurons);
+/// @param[in] vertices 	The entire list of vertices.
+void XmlGrowthRecorder::compileHistories(AllVertices &vertices) {
+   XmlRecorder::compileHistories(vertices);
 
    shared_ptr<Connections> conns = Simulator::getInstance().getModel()->getConnections();
 
@@ -86,18 +86,18 @@ void XmlGrowthRecorder::compileHistories(AllVertices &neurons) {
 
 /// Writes simulation results to an output destination.
 ///
-/// @param  neurons the Neuron list to search from.
-void XmlGrowthRecorder::saveSimData(const AllVertices &neurons) {
+/// @param  vertices the Neuron list to search from.
+void XmlGrowthRecorder::saveSimData(const AllVertices &vertices) {
    // create Neuron Types matrix
    VectorMatrix neuronTypes(MATRIX_TYPE, MATRIX_INIT, 1, Simulator::getInstance().getTotalVertices(), EXC);
    for (int i = 0; i < Simulator::getInstance().getTotalVertices(); i++) {
       neuronTypes[i] = Simulator::getInstance().getModel()->getLayout()->vertexTypeMap_[i];
    }
 
-   // create neuron threshold matrix
+   // create vertex threshold matrix
    VectorMatrix neuronThresh(MATRIX_TYPE, MATRIX_INIT, 1, Simulator::getInstance().getTotalVertices(), 0);
    for (int i = 0; i < Simulator::getInstance().getTotalVertices(); i++) {
-      neuronThresh[i] = dynamic_cast<const AllIFNeurons &>(neurons).Vthresh_[i];
+      neuronThresh[i] = dynamic_cast<const AllIFNeurons &>(vertices).Vthresh_[i];
    }
 
    // Write XML header information:
@@ -115,7 +115,7 @@ void XmlGrowthRecorder::saveSimData(const AllVertices &neurons) {
    resultOut_ << "   " << Simulator::getInstance().getModel()->getLayout()->yloc_->toXML("yloc") << endl;
    resultOut_ << "   " << neuronTypes.toXML("neuronTypes") << endl;
 
-   // create starter neuron matrix
+   // create starter vertex matrix
    int num_starter_neurons = static_cast<int>(Simulator::getInstance().getModel()->getLayout()->numEndogenouslyActiveNeurons_);
    if (num_starter_neurons > 0) {
       VectorMatrix starterNeurons(MATRIX_TYPE, MATRIX_INIT, 1, num_starter_neurons);
@@ -123,7 +123,7 @@ void XmlGrowthRecorder::saveSimData(const AllVertices &neurons) {
       resultOut_ << "   " << starterNeurons.toXML("starterNeurons") << endl;
    }
 
-   // Write neuron thresold
+   // Write vertex thresold
    resultOut_ << "   " << neuronThresh.toXML("neuronThresh") << endl;
 
    // write time between growth cycles
@@ -153,7 +153,7 @@ void XmlGrowthRecorder::printParameters() {
 ///  Get starter Neuron matrix.
 ///
 ///  @param  matrix      Starter Neuron matrix.
-///  @param  starterMap Bool map to reference neuron matrix location from.
+///  @param  starterMap Bool map to reference vertex matrix location from.
 void XmlGrowthRecorder::getStarterNeuronMatrix(VectorMatrix &matrix, const bool *starterMap) {
    int cur = 0;
    for (int i = 0; i < Simulator::getInstance().getTotalVertices(); i++) {

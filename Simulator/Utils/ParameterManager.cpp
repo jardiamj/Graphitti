@@ -278,7 +278,7 @@ bool ParameterManager::getLongByXpath(string xpath, long &referenceVar) {
 
 /// Interface method to pull a list of ints into a vector<int> from the xml
 /// schema. The calling object must match the elementName that stores the list. The xml files
-/// in the NLists directory name the element by which type of neuron lists is expected.
+/// in the NLists directory name the element by which type of vertex lists is expected.
 ///
 /// A - Active Neuron List
 /// I - Inhibitory Neuron List

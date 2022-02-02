@@ -238,7 +238,7 @@ bool parseCommandLine(int argc, char *argv[]) {
    return true;
 }
 
-///  Deserializes synapse weights, source vertices, destination vertices,
+///  Deserializes edge weights, source vertices, destination vertices,
 ///  maxEdgesPerVertex, totalVertices, and
 ///  if running a connGrowth model and radii is in serialization file, deserializes radii as well
 ///
@@ -270,35 +270,35 @@ bool deserializeSynapses() {
    }
 
 
-   // Deserializes synapse weights along with each synapse's source vertex and destination vertex
+   // Deserializes edge weights along with each edge's source vertex and destination vertex
    // Uses "try catch" to catch any cereal exception
    try {
       archive(*(dynamic_cast<AllEdges *>(connections->getEdges().get())));
    }
    catch (cereal::Exception e) {
-      cerr << "Failed deserializing synapse weights, source vertices, and/or destination vertices." << endl;
+      cerr << "Failed deserializing edge weights, source vertices, and/or destination vertices." << endl;
       return false;
    }
 
-   // Creates synapses from weight
-   connections->createSynapsesFromWeights(simulator.getTotalVertices(),
+   // Creates edges from weight
+   connections->createEdgesFromWeights(simulator.getTotalVertices(),
                                           layout.get(),
                                           (*layout->getVertices()),
                                           (*connections->getEdges()));
 
 
 #if defined(USE_GPU)
-   // Copies CPU Synapse data to GPU after deserialization, if we're doing
+   // Copies CPU Edge data to GPU after deserialization, if we're doing
    // a GPU-based simulation.
    simulator.copyCPUSynapseToGPU();
 #endif // USE_GPU
 
-   // Creates synapse index map (includes copy CPU index map to GPU)
+   // Creates edge index map (includes copy CPU index map to GPU)
    connections->createEdgeIndexMap();
 
 #if defined(USE_GPU)
    GPUModel *gpuModel = static_cast<GPUModel *>(simulator.getModel().get());
-   gpuModel->copySynapseIndexMapHostToDevice(*(connections->getEdgeIndexMap().get()), simulator.getTotalVertices());
+   gpuModel->copyEdgeIndexMapHostToDevice(*(connections->getEdgeIndexMap().get()), simulator.getTotalVertices());
 #endif // USE_GPU
 
    // Deserializes radii (only when running a connGrowth model and radii is in serialization file)
@@ -326,13 +326,13 @@ void serializeSynapses() {
    //cereal::BinaryOutputArchive archive(memory_out);
    
 #if defined(USE_GPU)
-   // Copies GPU Synapse props data to CPU for serialization
+   // Copies GPU Edge props data to CPU for serialization
    simulator.copyGPUSynapseToCPU();
 #endif // USE_GPU
    
     shared_ptr<Model> model = simulator.getModel();
 
-   // Serializes synapse weights along with each synapse's source vertex and destination vertex
+   // Serializes edge weights along with each edge's source vertex and destination vertex
    archive(*(dynamic_cast<AllEdges *>(model->getConnections()->getEdges().get())));
 
    // Serializes radii (only if it is a connGrowth model)

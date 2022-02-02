@@ -75,10 +75,10 @@ void GpuSInputPoisson::inputStimulus(SimulationInfo* psi)
     const int threadsPerBlock = 256;
     int blocksPerGrid = ( vertex_count + threadsPerBlock - 1 ) / threadsPerBlock;
 
-    // add input spikes to each synapse
+    // add input spikes to each edge
     inputStimulusDevice <<< blocksPerGrid, threadsPerBlock >>> ( vertex_count, nISIs_d, masks_d, psi->deltaT, lambda, devStates_d, allEdgesDevice );
 
-    // advance synapses
+    // advance edges
     advanceSpikingSynapsesDevice <<< blocksPerGrid, threadsPerBlock >>> ( edge_count, edgeIndexMapDevice, g_simulationStep, psi->deltaT, (AllSpikingSynapsesDeviceProperties*)allEdgesDevice );
 
     // update summation point
@@ -101,7 +101,7 @@ void GpuSInputPoisson::allocDeviceValues(IModel* model, SimulationInfo* psi, int
     // Copy values into device memory
     HANDLE_ERROR( cudaMemcpy ( nISIs_d, nISIs, nISIs_d_size, cudaMemcpyHostToDevice ) );
 
-    // create an input synapse layer
+    // create an input edge layer
     m_synapses->allocEdgeDeviceStruct( (void **)&allEdgesDevice, vertex_count, 1 ); 
     m_synapses->copyEdgeHostToDevice( allEdgesDevice, vertex_count, 1 );
 
@@ -113,7 +113,7 @@ void GpuSInputPoisson::allocDeviceValues(IModel* model, SimulationInfo* psi, int
     // allocate memory for curand global state
     HANDLE_ERROR( cudaMalloc ( &devStates_d, vertex_count * sizeof( curandState ) ) );
 
-    // allocate memory for synapse index map and initialize it
+    // allocate memory for edge index map and initialize it
     EdgeIndexMap edgeIndexMap;
     BGSIZE* incomingSynapseIndexMap = new BGSIZE[vertex_count];
 
@@ -146,7 +146,7 @@ void GpuSInputPoisson::deleteDeviceValues(IModel* model, SimulationInfo* psi )
 
     m_synapses->deleteEdgeDeviceStruct( allEdgesDevice );
 
-    // deallocate memory for synapse index map
+    // deallocate memory for edge index map
     EdgeIndexMap edgeIndexMap;
     HANDLE_ERROR( cudaMemcpy ( &edgeIndexMap, edgeIndexMapDevice, sizeof( EdgeIndexMap ), cudaMemcpyDeviceToHost ) );
     HANDLE_ERROR( cudaFree( edgeIndexMap.incomingSynapseIndexMap ) );
@@ -160,7 +160,7 @@ void GpuSInputPoisson::deleteDeviceValues(IModel* model, SimulationInfo* psi )
 /// @param[in] deltaT             Time step of the simulation in second.
 /// @param[in] lambda             Iinverse firing rate.
 /// @param[in] devStates_d        Curand global state
-/// @param[in] allEdgesDevice  Pointer to Synapse structures in device memory.
+/// @param[in] allEdgesDevice  Pointer to Edge structures in device memory.
 __global__ void inputStimulusDevice( int n, int* nISIs_d, bool* masks_d, BGFLOAT deltaT, BGFLOAT lambda, curandState* devStates_d, AllDSSynapsesDeviceProperties* allEdgesDevice )
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -211,7 +211,7 @@ __global__ void inputStimulusDevice( int n, int* nISIs_d, bool* masks_d, BGFLOAT
 ///
 /// @param[in] n                  Number of vertices.
 /// @param[in] summationPoint_d   SummationPoint
-/// @param[in] allEdgesDevice  Pointer to Synapse structures in device memory.
+/// @param[in] allEdgesDevice  Pointer to Edge structures in device memory.
 __global__ void applyI2SummationMap( int n, BGFLOAT* summationPoint_d, AllDSSynapsesDeviceProperties* allEdgesDevice ) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if ( idx >= n )

@@ -11,7 +11,7 @@
  * lead to regression (Ooyen etal. 1995).
  *
  * In this, synaptic strength (connectivity), \f$W\f$, was determined dynamically by a model of neurite
- * (cell input and output region) growth and synapse formation,
+ * (cell input and output region) growth and edge formation,
  * and a cell's region of connectivity is modeled as a circle with radius that changes
  * at a rate inversely proportional to a sigmoidal function of cell firing rate:
  * \f[
@@ -20,7 +20,7 @@
  * \f[
  *  G(F_{i}) = 1 - \frac{2}{1 + exp((\epsilon - F_{i}) / \beta)}
  * \f]
- * where \f$R_{i}\f$ is the radius of connectivity of neuron \f$i\f$, \f$F_{i}\f$ is neuron i's firing rate
+ * where \f$R_{i}\f$ is the radius of connectivity of vertex \f$i\f$, \f$F_{i}\f$ is vertex i's firing rate
  * (normalized to be in the range \f$[0,1]\f$, \f$\rho\f$ is an outgrowth rate constant, \f$\epsilon\f$ is a constant
  * that sets the "null point" for outgrowth (the firing rate in spikes/sec that causes
  * no outgrowth or retration), and \f$\beta\f$ determines the slope of \f$G(\cdot)\f$.
@@ -29,10 +29,10 @@
  * that the living preparation takes to 60,000s (approximaely 16 simulated hours).
  * Extensive analysis and simulation was performed to determine the maximum \f$\rho\f$ \f$(\rho=0.0001)\f$
  * that would not interfere with network dynamics (the increased value of \f$\rho\f$ was still
- * orders of magnitude slower than the slowest of the neuron or synapse time constants,
+ * orders of magnitude slower than the slowest of the vertex or edge time constants,
  * which were order of \f$10^{-2}\f$~\f$10^{-3}sec\f$).
  *
- * Synaptic strengths were computed for all pairs of neurons that had overlapping connectivity
+ * Synaptic strengths were computed for all pairs of vertices that had overlapping connectivity
  * regions as the area of their circle's overlap:
  * \f[
  *  r_0^2 = r_1^2 + |AB|^2 - 2 r_1 |AB| cos(\angle CBA)
@@ -55,9 +55,9 @@
  * \f[
  *  w_{01} = w_{10}
  * \f]
- * where A and B are the locations of neurons A and B, \f$r_0\f$ and 
- * \f$r_1\f$ are the neurite radii of neuron A and B, C and B are locations of intersections 
- * of neurite boundaries of neuron A and B, and \f$w_{01}\f$ and \f$w_{10}\f$ are the areas of 
+ * where A and B are the locations of vertices A and B, \f$r_0\f$ and 
+ * \f$r_1\f$ are the neurite radii of vertex A and B, C and B are locations of intersections 
+ * of neurite boundaries of vertex A and B, and \f$w_{01}\f$ and \f$w_{10}\f$ are the areas of 
  * their circla's overlap. 
  *
  * Some models in this simulator is a rewrite of CSIM (2006) and other
@@ -89,9 +89,9 @@ public:
    ///  Setup the internal structure of the class (allocate memories and initialize them).
    ///
    ///  @param  layout    Layout information of the neural network.
-   ///  @param  neurons   The Neuron list to search from.
-   ///  @param  synapses  The Synapse list to search from.
-   virtual void setupConnections(Layout *layout, AllVertices *neurons, AllEdges *synapses) override;
+   ///  @param  vertices   The Neuron list to search from.
+   ///  @param  edges  The Edge list to search from.
+   virtual void setupConnections(Layout *layout, AllVertices *vertices, AllEdges *edges) override;
 
    /// Load member variables from configuration file.
    /// Registered to OperationManager as Operations::op::loadParameters
@@ -103,10 +103,10 @@ public:
 
    ///  Update the connections status in every epoch.
    ///
-   ///  @param  neurons  The Neuron list to search from.
+   ///  @param  vertices  The Neuron list to search from.
    ///  @param  layout   Layout information of the neural network.
    ///  @return true if successful, false otherwise.
-   virtual bool updateConnections(AllVertices &neurons, Layout *layout) override;
+   virtual bool updateConnections(AllVertices &vertices, Layout *layout) override;
 
    ///  Cereal serialization method
    ///  (Serializes radii)
@@ -122,52 +122,52 @@ public:
    void printRadii() const;
 
 #if defined(USE_GPU)
-   ///  Update the weights of the Synapses in the simulation. To be clear,
-   ///  iterates through all source and destination neurons and updates their
+   ///  Update the weights of the Edges in the simulation. To be clear,
+   ///  iterates through all source and destination vertices and updates their
    ///  synaptic strengths from the weight matrix.
    ///  Note: Platform Dependent.
    ///
    ///  @param  numVertices          number of vertices to update.
    ///  @param  vertices             The AllVertices object.
-   ///  @param  synapses            The AllEdges object.
+   ///  @param  edges            The AllEdges object.
    ///  @param  allVerticesDevice    GPU address of the allVertices struct in device memory.
    ///  @param  allEdgesDevice   GPU address of the allEdges struct in device memory.
    ///  @param  layout              The Layout object.
-   virtual void updateSynapsesWeights(const int numVertices,
-         AllVertices &neurons, AllEdges &synapses,
+   virtual void updateEdgesWeights(const int numVertices,
+         AllVertices &vertices, AllEdges &edges,
          AllSpikingNeuronsDeviceProperties* allVerticesDevice,
          AllSpikingSynapsesDeviceProperties* allEdgesDevice,
          Layout *layout) override;
 #else
-   ///  Update the weights of the Synapses in the simulation. To be clear,
-   ///  iterates through all source and destination neurons and updates their
+   ///  Update the weights of the Edges in the simulation. To be clear,
+   ///  iterates through all source and destination vertices and updates their
    ///  synaptic strengths from the weight matrix.
    ///  Note: Platform Dependent.
    ///
    ///  @param  numVertices  Number of vertices to update.
    ///  @param  ineurons    The AllVertices object.
-   ///  @param  isynapses   The AllEdges object.
+   ///  @param  iedges   The AllEdges object.
    ///  @param  layout      The Layout object.
    virtual void
-   updateSynapsesWeights(const int numVertices,
+   updateEdgesWeights(const int numVertices,
          AllVertices &vertices,
-         AllEdges &synapses,
+         AllEdges &edges,
          Layout *layout) override;
 
 #endif
 private:
-   ///  Calculates firing rates, neuron radii change and assign new values.
+   ///  Calculates firing rates, vertex radii change and assign new values.
    ///
-   ///  @param  neurons  The Neuron list to search from.
-   void updateConns(AllVertices &neurons);
+   ///  @param  vertices  The Neuron list to search from.
+   void updateConns(AllVertices &vertices);
 
-   ///  Update the distance between frontiers of Neurons.
+   ///  Update the distance between frontiers of Vertices.
    ///
    ///  @param  numVertices  Number of vertices to update.
    ///  @param  layout      Layout information of the neural network.
    void updateFrontiers(const int numVertices, Layout *layout);
 
-   ///  Update the areas of overlap in between Neurons.
+   ///  Update the areas of overlap in between Vertices.
    ///
    ///  @param  numVertices  Number of vertices to update.
    ///  @param  layout      Layout information of the neural network.
@@ -180,8 +180,8 @@ public:
       BGFLOAT rho;         ///< outgrowth rate constant
       BGFLOAT targetRate;  ///<  Spikes/second
       BGFLOAT maxRate;     ///<  = targetRate / epsilon;
-      BGFLOAT minRadius;   ///<  To ensure that even rapidly-firing neurons will connect to
-                           ///< other neurons, when within their RFS.
+      BGFLOAT minRadius;   ///<  To ensure that even rapidly-firing vertices will connect to
+                           ///< other vertices, when within their RFS.
       BGFLOAT startRadius; ///< No need to wait a long time before RFs start to overlap
    };
 
@@ -194,10 +194,10 @@ public:
    /// radii size
    int radiiSize_;
 
-   /// synapse weight
+   /// edge weight
    CompleteMatrix *W_;
 
-   /// neuron radii
+   /// vertex radii
    VectorMatrix *radii_;
 
    /// spiking rate
@@ -209,10 +209,10 @@ public:
    /// areas of overlap
    CompleteMatrix *area_;
 
-   /// neuron's outgrowth
+   /// vertex's outgrowth
    VectorMatrix *outgrowth_;
 
-   /// displacement of neuron radii
+   /// displacement of vertex radii
    VectorMatrix *deltaR_;
 
 };

@@ -12,7 +12,7 @@
 
 #include "Book.h"
 
-///  Allocate GPU memories to store all neurons' states,
+///  Allocate GPU memories to store all vertices' states,
 ///  and copy them from host to GPU memory.
 ///
 ///  @param  allVerticesDevice   GPU address of the AllIZHNeuronsDeviceProperties struct 
@@ -26,7 +26,7 @@ void AllIZHNeurons::allocNeuronDeviceStruct( void** allVerticesDevice ) {
         HANDLE_ERROR( cudaMemcpy ( *allVerticesDevice, &allVerticesDeviceProps, sizeof( AllIZHNeuronsDeviceProperties ), cudaMemcpyHostToDevice ) );
 }
 
-///  Allocate GPU memories to store all neurons' states.
+///  Allocate GPU memories to store all vertices' states.
 ///  (Helper function of allocNeuronDeviceStruct)
 ///
 ///  @param  allVerticesDevice    GPU address of the AllIZHNeuronsDeviceProperties struct on device memory.
@@ -72,7 +72,7 @@ void AllIZHNeurons::deleteDeviceStruct( AllIZHNeuronsDeviceProperties& allVertic
 	AllIFNeurons::deleteDeviceStruct( allVerticesDevice );
 }
 
-///  Copy all neurons' data from host to device.
+///  Copy all vertices' data from host to device.
 ///
 ///  @param  allVerticesDevice   GPU address of the AllIZHNeuronsDeviceProperties struct 
 ///                             on device memory.
@@ -83,7 +83,7 @@ void AllIZHNeurons::copyNeuronHostToDevice( void* allVerticesDevice ) {
 	copyHostToDevice( allVerticesDeviceProps );
 }
 
-///  Copy all neurons' data from host to device.
+///  Copy all vertices' data from host to device.
 ///  (Helper function of copyNeuronHostToDevice)
 ///
 ///  @param  allVerticesDevice    GPU address of the AllIZHNeuronsDeviceProperties struct on device memory.
@@ -100,7 +100,7 @@ void AllIZHNeurons::copyHostToDevice( AllIZHNeuronsDeviceProperties& allVertices
 	HANDLE_ERROR( cudaMemcpy ( allVerticesDevice.C3_, C3_, count * sizeof( BGFLOAT ), cudaMemcpyHostToDevice ) );
 }
 
-///  Copy all neurons' data from device to host.
+///  Copy all vertices' data from device to host.
 ///
 ///  @param  allVerticesDevice   GPU address of the AllIZHNeuronsDeviceProperties struct 
 ///                             on device memory.

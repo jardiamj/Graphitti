@@ -7,25 +7,25 @@
  * 
  * The Model class maintains and manages classes of objects that make up
  * essential components of the spiking neural network.
- *    -# AllVertices: A class to define a list of particular type of neurons.
- *    -# AllEdges: A class to define a list of particular type of synapses.
+ *    -# AllVertices: A class to define a list of particular type of vertices.
+ *    -# AllEdges: A class to define a list of particular type of edges.
  *    -# Connections: A class to define connections of the neural network.
- *    -# Layout: A class to define neurons' layout information in the network.
+ *    -# Layout: A class to define vertices' layout information in the network.
  *
- * The network is composed of 3 superimposed 2-d arrays: neurons, synapses, and
+ * The network is composed of 3 superimposed 2-d arrays: vertices, edges, and
  * summation points.
  *
- * Synapses in the synapse map are located at the coordinates of the neuron
- * from which they receive output.  Each synapse stores a pointer into a
+ * Edges in the edge map are located at the coordinates of the vertex
+ * from which they receive output.  Each edge stores a pointer into a
  * summation point.
  *
- * If, during an advance cycle, a neuron \f$A\f$ at coordinates \f$x,y\f$ fires, every synapse
- * which receives output is notified of the spike. Those synapses then hold
+ * If, during an advance cycle, a vertex \f$A\f$ at coordinates \f$x,y\f$ fires, every edge
+ * which receives output is notified of the spike. Those edges then hold
  * the spike until their delay period is completed.  At a later advance cycle, once the delay
- * period has been completed, the synapses apply their PSRs (Post-Synaptic-Response) to
+ * period has been completed, the edges apply their PSRs (Post-Synaptic-Response) to
  * the summation points.
  *
- * Finally, on the next advance cycle, each neuron \f$B\f$ adds the value stored
+ * Finally, on the next advance cycle, each vertex \f$B\f$ adds the value stored
  * in their corresponding summation points to their \f$V_m\f$ and resets the summation points to
  * zero.
  *
@@ -54,14 +54,14 @@ public:
    /// Advances network state one simulation step.
    virtual void advance() override;
 
-   /// Modifies connections between neurons based on current state of the network and behavior
+   /// Modifies connections between vertices based on current state of the network and behavior
    /// over the past epoch. Should be called once every epoch.
    virtual void updateConnections() override;
 
-   /// Copy GPU Synapse data to CPU.
+   /// Copy GPU Edge data to CPU.
    virtual void copyGPUtoCPU() override;
 
-   /// Copy CPU Synapse data to GPU.
+   /// Copy CPU Edge data to GPU.
    virtual void copyCPUtoGPU() override;
 
 };

@@ -49,7 +49,7 @@ void AllIZHNeurons::setupVertices() {
    C3_ = new BGFLOAT[size_];
 }
 
-///  Prints out all parameters of the neurons to logging file.
+///  Prints out all parameters of the vertices to logging file.
 ///  Registered to OperationManager as Operation::printParameters
 void AllIZHNeurons::printParameters() const {
    AllIFNeurons::printParameters();
@@ -82,7 +82,7 @@ void AllIZHNeurons::printParameters() const {
 
 }
 
-///  Creates all the Neurons and generates data for them.
+///  Creates all the Vertices and generates data for them.
 ///
 ///  @param  layout      Layout information of the neural network.
 void AllIZHNeurons::createAllVertices(Layout *layout) {
@@ -90,17 +90,17 @@ void AllIZHNeurons::createAllVertices(Layout *layout) {
    for (int i = 0; i < Simulator::getInstance().getTotalVertices(); i++) {
       setNeuronDefaults(i);
 
-      // set the neuron info for neurons
+      // set the neuron info for vertices
       createNeuron(i, layout);
    }
 }
 
 ///  Creates a single Neuron and generates data for it.
 ///
-///  @param  i Index of the neuron to create.
+///  @param  i neuron index to create.
 ///  @param  layout       Layout information of the neural network.
 void AllIZHNeurons::createNeuron(int i, Layout *layout) {
-   // set the neuron info for neurons
+   // set the neuron info for vertices
    AllIFNeurons::createNeuron(i, layout);
 
    // TODO: we may need another distribution mode besides flat distribution
@@ -132,7 +132,7 @@ void AllIZHNeurons::createNeuron(int i, Layout *layout) {
 
 ///  Set the Neuron at the indexed location to default values.
 ///
-///  @param  i    Index of the Neuron to refer.
+///  @param  i    neuron index to refer.
 void AllIZHNeurons::setNeuronDefaults(const int index) {
    AllIFNeurons::setNeuronDefaults(index);
 
@@ -147,7 +147,7 @@ void AllIZHNeurons::setNeuronDefaults(const int index) {
 
 ///  Initializes the Neuron constants at the indexed location.
 ///
-///  @param  i    Index of the Neuron.
+///  @param  i    neuron index.
 ///  @param  deltaT          Inner simulation step duration
 void AllIZHNeurons::initNeuronConstsFromParamValues(int i, const BGFLOAT deltaT) {
    AllIFNeurons::initNeuronConstsFromParamValues(i, deltaT);
@@ -156,10 +156,10 @@ void AllIZHNeurons::initNeuronConstsFromParamValues(int i, const BGFLOAT deltaT)
    C3 = deltaT * 1000;
 }
 
-///  Outputs state of the neuron chosen as a string.
+///  Outputs state of the vertex chosen as a string.
 ///
-///  @param  index index of the neuron (in neurons) to output info from.
-///  @return the complete state of the neuron.
+///  @param  index neuron index (in vertices) to output info from.
+///  @return the complete state of the vertex.
 string AllIZHNeurons::toString(const int index) const {
    stringstream ss;
 
@@ -174,7 +174,7 @@ string AllIZHNeurons::toString(const int index) const {
    return ss.str();
 }
 
-///  Sets the data for Neurons to input's data.
+///  Sets the data for Vertices to input's data.
 ///
 ///  @param  input       istream to read from.
 void AllIZHNeurons::deserialize(istream &input) {
@@ -186,7 +186,7 @@ void AllIZHNeurons::deserialize(istream &input) {
 ///  Sets the data for Neuron #index to input's data.
 ///
 ///  @param  input       istream to read from.
-///  @param  index           index of the neuron (in neurons).
+///  @param  index           neuron index (in vertices).
 void AllIZHNeurons::readNeuron(istream &input, int index) {
    AllIFNeurons::readNeuron(input, index);
 
@@ -204,7 +204,7 @@ void AllIZHNeurons::readNeuron(istream &input, int index) {
    input.ignore();
 }
 
-///  Writes out the data in Neurons.
+///  Writes out the data in Vertices.
 ///
 ///  @param  output      stream to write out to.
 void AllIZHNeurons::serialize(ostream &output) const {
@@ -216,7 +216,7 @@ void AllIZHNeurons::serialize(ostream &output) const {
 ///  Writes out the data in the selected Neuron.
 ///
 ///  @param  output      stream to write out to.
-///  @param  index       index of the neuron (in neurons).
+///  @param  index       neuron index (in vertices).
 void AllIZHNeurons::writeNeuron(ostream &output, int index) const {
    AllIFNeurons::writeNeuron(output, index);
 
@@ -232,7 +232,7 @@ void AllIZHNeurons::writeNeuron(ostream &output, int index) const {
 
 ///  Update internal state of the indexed Neuron (called by every simulation step).
 ///
-///  @param  index       Index of the Neuron to update.
+///  @param  index       neuron index to update.
 void AllIZHNeurons::advanceNeuron(const int index) {
    BGFLOAT &Vm = this->Vm_[index];
    BGFLOAT &Vthresh = this->Vthresh_[index];
@@ -249,7 +249,7 @@ void AllIZHNeurons::advanceNeuron(const int index) {
    BGFLOAT &u = this->u_[index];
 
    if (nStepsInRefr > 0) {
-      // is neuron refractory?
+      // is vertex refractory?
       --nStepsInRefr;
    } else if (Vm >= Vthresh) {
       // should it fire?
@@ -295,7 +295,7 @@ void AllIZHNeurons::advanceNeuron(const int index) {
 
 ///  Fire the selected Neuron and calculate the result.
 ///
-///  @param  index       Index of the Neuron to update.
+///  @param  index       neuron index to update.
 void AllIZHNeurons::fire(const int index) const {
    const BGFLOAT deltaT = Simulator::getInstance().getDeltaT();
    AllSpikingNeurons::fire(index);

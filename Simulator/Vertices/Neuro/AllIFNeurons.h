@@ -9,12 +9,12 @@
  * This is the base class of all Integate and Fire (IF) neuron classes.
  *
  * The class uses a data-centric structure, which utilizes a structure as the containers of
- * all neuron.
+ * all vertices.
  *
- * The container holds neuron parameters of all neurons.
- * Each kind of neuron parameter is stored in a 1D array, of which length
- * is number of all neurons. Each array of a neuron parameter is pointed by a
- * corresponding member variable of the neuron parameter in the class.
+ * The container holds neuron parameters of all vertices.
+ * Each kind of vertex parameter is stored in a 1D array, of which length
+ * is number of all vertices. Each array of a vertex parameter is pointed by a
+ * corresponding member variable of the vertex parameter in the class.
  *
  * This structure was originally designed for the GPU implementation of the
  * simulator, and this refactored version of the simulator simply uses that design for
@@ -35,51 +35,51 @@ public:
    virtual ~AllIFNeurons();
 
    ///  Setup the internal structure of the class.
-   ///  Allocate memories to store all neurons' state.
+   ///  Allocate memories to store all vertices' state.
    virtual void setupVertices() override;
 
    ///  Load member variables from configuration file.
    ///  Registered to OperationManager as Operation::loadParameters
    virtual void loadParameters();
 
-   ///  Prints out all parameters of the neurons to logging file.
+   ///  Prints out all parameters of the vertices to logging file.
    ///  Registered to OperationManager as Operation::printParameters
    virtual void printParameters() const;
 
-   ///  Creates all the Neurons and assigns initial data for them.
+   ///  Creates all the Vertices and assigns initial data for them.
    ///
    ///  @param  layout      Layout information of the neural network.
    virtual void createAllVertices(Layout *layout);
 
-   ///  Outputs state of the neuron chosen as a string.
+   ///  Outputs state of the vertex chosen as a string.
    ///
-   ///  @param  index   index of the neuron (in neurons) to output info from.
-   ///  @return the complete state of the neuron.
+   ///  @param  index   neuron index to output info from.
+   ///  @return the complete state of the vertex.
    virtual string toString(const int index) const;
 
-   /// Reads and sets the data for all neurons from input stream.
+   /// Reads and sets the data for all vertices from input stream.
    ///
    /// @param  input       istream to read from.
    virtual void deserialize(istream &input);
 
-   ///  Writes out the data in all neurons to output stream.
+   ///  Writes out the data in all vertices to output stream.
    ///
    ///  @param  output      stream to write out to.ss.
    virtual void serialize(ostream &output) const;
 
 #if defined(USE_GPU)
    public:
-       ///  Update the state of all neurons for a time step
-       ///  Notify outgoing synapses if neuron has fired.
+       ///  Update the state of all vertices for a time step
+       ///  Notify outgoing edges if vertex has fired.
        ///
-       ///  @param  synapses               Reference to the allEdges struct on host memory.
+       ///  @param  edges               Reference to the allEdges struct on host memory.
        ///  @param  allVerticesDevice       GPU address of the allNeurons struct on device memory.
        ///  @param  allEdgesDevice      GPU address of the allEdges struct on device memory.
        ///  @param  randNoise              Reference to the random noise array.
        ///  @param  edgeIndexMapDevice  GPU address of the EdgeIndexMap on device memory.
-       virtual void advanceVertices(AllEdges &synapses, void* allVerticesDevice, void* allEdgesDevice, float* randNoise, EdgeIndexMap* edgeIndexMapDevice);
+       virtual void advanceVertices(AllEdges &edges, void* allVerticesDevice, void* allEdgesDevice, float* randNoise, EdgeIndexMap* edgeIndexMapDevice);
 
-       ///  Allocate GPU memories to store all neurons' states,
+       ///  Allocate GPU memories to store all vertices' states,
        ///  and copy them from host to GPU memory.
        ///
        ///  @param  allVerticesDevice   GPU address of the allNeurons struct on device memory.
@@ -90,12 +90,12 @@ public:
        ///  @param  allVerticesDevice   GPU address of the allNeurons struct on device memory.
        virtual void deleteNeuronDeviceStruct( void* allVerticesDevice );
 
-       ///  Copy all neurons' data from host to device.
+       ///  Copy all vertices' data from host to device.
        ///
        ///  @param  allVerticesDevice   GPU address of the allNeurons struct on device memory.
        virtual void copyNeuronHostToDevice( void* allVerticesDevice );
 
-       ///  Copy all neurons' data from device to host.
+       ///  Copy all vertices' data from device to host.
        ///
        ///  @param  allVerticesDevice   GPU address of the allNeurons struct on device memory.
        virtual void copyNeuronDeviceToHost( void* allVerticesDevice );
@@ -110,13 +110,13 @@ public:
        ///  @param  allVerticesDevice   GPU address of the allNeurons struct on device memory.
        virtual void copyNeuronDeviceSpikeCountsToHost( void* allVerticesDevice ) override;
 
-       ///  Clear the spike counts out of all neurons.
+       ///  Clear the spike counts out of all vertices.
        ///
        ///  @param  allVerticesDevice   GPU address of the allNeurons struct on device memory.
        virtual void clearNeuronSpikeCounts( void* allVerticesDevice ) override;
 
    protected:
-       ///  Allocate GPU memories to store all neurons' states.
+       ///  Allocate GPU memories to store all vertices' states.
        ///  (Helper function of allocNeuronDeviceStruct)
        ///
        ///  @param  allVerticesDevice         Reference to the AllIFNeuronsDeviceProperties struct.
@@ -128,13 +128,13 @@ public:
        ///  @param  allVerticesDevice         Reference to the AllIFNeuronsDeviceProperties struct.
        void deleteDeviceStruct( AllIFNeuronsDeviceProperties& allVerticesDevice );
 
-       ///  Copy all neurons' data from host to device.
+       ///  Copy all vertices' data from host to device.
        ///  (Helper function of copyNeuronHostToDevice)
        ///
        ///  @param  allVerticesDevice         Reference to the AllIFNeuronsDeviceProperties struct.
   void copyHostToDevice( AllIFNeuronsDeviceProperties& allVerticesDevice );
 
-       ///  Copy all neurons' data from device to host.
+       ///  Copy all vertices' data from device to host.
        ///  (Helper function of copyNeuronDeviceToHost)
        ///
        ///  @param  allVerticesDevice         Reference to the AllIFNeuronsDeviceProperties struct.
@@ -145,31 +145,31 @@ public:
 protected:
    ///  Creates a single Neuron and generates data for it.
    ///
-   ///  @param  neuronIndex Index of the neuron to create.
+   ///  @param  neuronIndex neuron index to create.
    ///  @param  layout       Layout information of the neural network.
    void createNeuron(int neuronIndex, Layout *layout);
 
    ///  Set the Neuron at the indexed location to default values.
    ///
-   ///  @param  index    Index of the Neuron that the synapse belongs to.
+   ///  @param  index    neuron index that the edge belongs to.
    void setNeuronDefaults(const int index);
 
    ///  Initializes the Neuron constants at the indexed location.
    ///
-   ///  @param  neuronIndex    Index of the Neuron.
+   ///  @param  neuronIndex    neuron index.
    ///  @param  deltaT          Inner simulation step duration
    virtual void initNeuronConstsFromParamValues(int neuronIndex, const BGFLOAT deltaT);
 
    ///  Sets the data for Neuron #index to input's data.
    ///
    ///  @param  input       istream to read from.
-   ///  @param  i           index of the neuron (in neurons).
+   ///  @param  i           neuron index (in vertices).
    void readNeuron(istream &input, int i);
 
    ///  Writes out the data in the selected Neuron.
    ///
    ///  @param  output      stream to write out to.
-   ///  @param  i           index of the neuron (in neurons).
+   ///  @param  i           neuron index (in vertices).
    void writeNeuron(ostream &output, int i) const;
 
 public:

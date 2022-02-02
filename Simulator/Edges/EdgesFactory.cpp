@@ -16,7 +16,7 @@
 
 /// Constructor is private to keep a singleton instance of this class.
 EdgesFactory::EdgesFactory() {
-   // register neurons classes
+   // register vertices classes
    registerClass("AllSpikingSynapses", &AllSpikingSynapses::Create);
    registerClass("AllSTDPSynapses", &AllSTDPSynapses::Create);
    registerClass("AllDSSynapses", &AllDSSynapses::Create);
@@ -30,14 +30,14 @@ EdgesFactory::~EdgesFactory() {
 
 ///  Register edges class and its creation function to the factory.
 ///
-///  @param  className  neurons class name.
+///  @param  className  vertices class name.
 ///  @param  Pointer to the class creation function.
 void EdgesFactory::registerClass(const string &className, CreateFunction function) {
    createFunctions[className] = function;
 }
 
 
-/// Creates concrete instance of the desired neurons class.
+/// Creates concrete instance of the desired vertices class.
 shared_ptr<AllEdges> EdgesFactory::createEdges(const string &className) {
    edgesInstance_ = shared_ptr<AllEdges>(invokeCreateFunction(className));
    return edgesInstance_;

@@ -156,7 +156,7 @@ void All911Vertices::advanceVertices(AllEdges &edges, const EdgeIndexMap *edgeIn
 
 ///  Update internal state of the indexed Neuron (called by every simulation step).
 ///
-///  @param  index       Index of the Neuron to update.
+///  @param  index       neuron index to update.
 void All911Vertices::advanceVertex(const int index) {
     // BGFLOAT &Vm = this->Vm_[index];
     // BGFLOAT &Vthresh = this->Vthresh_[index];

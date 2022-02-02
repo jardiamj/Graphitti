@@ -3,7 +3,7 @@
  * 
  * @ingroup Simulator/Edges
  *
- * @brief A container of all dynamic STDP synapse data
+ * @brief A container of all dynamic STDP edge data
  */
 
 #include <iomanip>
@@ -62,7 +62,7 @@ void AllSpikingSynapses::setupEdges() {
 ///  Setup the internal structure of the class (allocate memories and initialize them).
 ///
 ///  @param  numVertices   Total number of vertices in the network.
-///  @param  maxEdges  Maximum number of synapses per neuron.
+///  @param  maxEdges  Maximum number of edges per vertex.
 void AllSpikingSynapses::setupEdges(const int numVertices, const int maxEdges) {
    AllNeuroEdges::setupEdges(numVertices, maxEdges);
 
@@ -78,9 +78,9 @@ void AllSpikingSynapses::setupEdges(const int numVertices, const int maxEdges) {
    }
 }
 
-///  Initializes the queues for the Synapse.
+///  Initializes the queues for the Edge.
 ///
-///  @param  iEdg   index of the synapse to set.
+///  @param  iEdg   index of the edge to set.
 void AllSpikingSynapses::initSpikeQueue(const BGSIZE iEdg) {
    int &totalDelay = totalDelay_[iEdg];
    uint32_t &delayQueue = delayQueue_[iEdg];
@@ -96,7 +96,7 @@ void AllSpikingSynapses::initSpikeQueue(const BGSIZE iEdg) {
 
 ///  Reset time varying state vars and recompute decay.
 ///
-///  @param  iEdg     Index of the synapse to set.
+///  @param  iEdg     Index of the edge to set.
 ///  @param  deltaT   Inner simulation step duration
 void AllSpikingSynapses::resetEdge(const BGSIZE iEdg, const BGFLOAT deltaT) {
    AllNeuroEdges::resetEdge(iEdg, deltaT);
@@ -132,10 +132,10 @@ void AllSpikingSynapses::printParameters() const {
                    << endl);
 }
 
-///  Sets the data for Synapse to input's data.
+///  Sets the data for Edge to input's data.
 ///
 ///  @param  input  istream to read from.
-///  @param  iEdg   Index of the synapse to set.
+///  @param  iEdg   Index of the edge to set.
 void AllSpikingSynapses::readEdge(istream &input, const BGSIZE iEdg) {
    AllNeuroEdges::readEdge(input, iEdg);
 
@@ -154,10 +154,10 @@ void AllSpikingSynapses::readEdge(istream &input, const BGSIZE iEdg) {
    input.ignore();
 }
 
-///  Write the synapse data to the stream.
+///  Write the edge data to the stream.
 ///
 ///  @param  output  stream to print out to.
-///  @param  iEdg    Index of the synapse to print out.
+///  @param  iEdg    Index of the edge to print out.
 void AllSpikingSynapses::writeEdge(ostream &output, const BGSIZE iEdg) const {
    AllNeuroEdges::writeEdge(output, iEdg);
 
@@ -169,14 +169,14 @@ void AllSpikingSynapses::writeEdge(ostream &output, const BGSIZE iEdg) const {
    output << tau_[iEdg] << ends;
 }
 
-///  Create a Synapse and connect it to the model.
+///  Create a Edge and connect it to the model.
 ///
-///  @param  iEdg        Index of the synapse to set.
+///  @param  iEdg        Index of the edge to set.
 ///  @param  srcVertex   Coordinates of the source Neuron.
 ///  @param  destVertex  Coordinates of the destination Neuron.
 ///  @param  sumPoint    Summation point address.
 ///  @param  deltaT      Inner simulation step duration.
-///  @param  type        Type of the Synapse to create.
+///  @param  type        Type of the Edge to create.
 void AllSpikingSynapses::createEdge(const BGSIZE iEdg, int srcVertex, int destVertex, BGFLOAT *sumPoint,
                                        const BGFLOAT deltaT, edgeType type) {
    BGFLOAT delay;
@@ -215,7 +215,7 @@ void AllSpikingSynapses::createEdge(const BGSIZE iEdg, int srcVertex, int destVe
    tau_[iEdg] = tau;
    totalDelay_[iEdg] = static_cast<int>( delay / deltaT ) + 1;
 
-   // initializes the queues for the Synapses
+   // initializes the queues for the Edges
    initSpikeQueue(iEdg);
    // reset time varying state vars and recompute decay
    resetEdge(iEdg, deltaT);
@@ -225,7 +225,7 @@ void AllSpikingSynapses::createEdge(const BGSIZE iEdg, int srcVertex, int destVe
 
 ///  Checks if there is an input spike in the queue.
 ///
-///  @param  iEdg   Index of the Synapse to connect to.
+///  @param  iEdg   Index of the Edge to connect to.
 ///  @return true if there is an input spike event.
 bool AllSpikingSynapses::isSpikeQueue(const BGSIZE iEdg) {
    uint32_t &delayQueue = delayQueue_[iEdg];
@@ -240,9 +240,9 @@ bool AllSpikingSynapses::isSpikeQueue(const BGSIZE iEdg) {
    return r;
 }
 
-///  Prepares Synapse for a spike hit.
+///  Prepares Edge for a spike hit.
 ///
-///  @param  iEdg   Index of the Synapse to update.
+///  @param  iEdg   Index of the Edge to update.
 void AllSpikingSynapses::preSpikeHit(const BGSIZE iEdg) {
    uint32_t &delayQueue = delayQueue_[iEdg];
    int &delayIdx = delayIndex_[iEdg];
@@ -267,17 +267,17 @@ void AllSpikingSynapses::preSpikeHit(const BGSIZE iEdg) {
    delayQueue |= (0x1 << idx);
 }
 
-///  Prepares Synapse for a spike hit (for back propagation).
+///  Prepares Edge for a spike hit (for back propagation).
 ///
-///  @param  iEdg   Index of the Synapse to update.
+///  @param  iEdg   Index of the Edge to update.
 void AllSpikingSynapses::postSpikeHit(const BGSIZE iEdg) {
 }
 
-///  Advance one specific Synapse.
+///  Advance one specific Edge.
 ///
-///  @param  iEdg      Index of the Synapse to connect to.
-///  @param  neurons   The Neuron list to search from.
-void AllSpikingSynapses::advanceEdge(const BGSIZE iEdg, AllVertices *neurons) {
+///  @param  iEdg      Index of the Edge to connect to.
+///  @param  vertices   The Neuron list to search from.
+void AllSpikingSynapses::advanceEdge(const BGSIZE iEdg, AllVertices *vertices) {
    BGFLOAT &decay = decay_[iEdg];
    BGFLOAT &psr = psr_[iEdg];
    BGFLOAT &summationPoint = *(summationPoint_[iEdg]);
@@ -300,9 +300,9 @@ void AllSpikingSynapses::advanceEdge(const BGSIZE iEdg, AllVertices *neurons) {
 #endif
 }
 
-///  Calculate the post synapse response after a spike.
+///  Calculate the post edge response after a spike.
 ///
-///  @param  iEdg        Index of the synapse to set.
+///  @param  iEdg        Index of the edge to set.
 ///  @param  deltaT      Inner simulation step duration.
 void AllSpikingSynapses::changePSR(const BGSIZE iEdg, const BGFLOAT deltaT) {
    BGFLOAT &psr = psr_[iEdg];
@@ -314,9 +314,9 @@ void AllSpikingSynapses::changePSR(const BGSIZE iEdg, const BGFLOAT deltaT) {
 
 #endif //!defined(USE_GPU)
 
-///  Updates the decay if the synapse selected.
+///  Updates the decay if the edge selected.
 ///
-///  @param  iEdg    Index of the synapse to set.
+///  @param  iEdg    Index of the edge to set.
 ///  @param  deltaT  Inner simulation step duration
 bool AllSpikingSynapses::updateDecay(const BGSIZE iEdg, const BGFLOAT deltaT) {
    BGFLOAT &tau = tau_[iEdg];
@@ -329,8 +329,8 @@ bool AllSpikingSynapses::updateDecay(const BGSIZE iEdg, const BGFLOAT deltaT) {
    return false;
 }
 
-///  Check if the back propagation (notify a spike event to the pre neuron)
-///  is allowed in the synapse class.
+///  Check if the back propagation (notify a spike event to the pre vertex)
+///  is allowed in the edge class.
 ///
 ///  @return true if the back propagation is allowed.
 bool AllSpikingSynapses::allowBackPropagation() {

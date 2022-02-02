@@ -120,7 +120,7 @@ void AllEdges::setupEdges(const int numVertices, const int maxEdges) {
    }
 }
 
-///  Sets the data for Synapse to input's data.
+///  Sets the data for Edge to input's data.
 ///
 ///  @param  input  istream to read from.
 ///  @param  iEdg   Index of the edge to set.

@@ -43,10 +43,10 @@ public:
    void printParameters() const; /// Prints loaded parameters to logging file.
 
    // Copied over from STDPFix
-   void copyGPUSynapseToCPU(); /// Copy GPU Synapse data to CPU.
+   void copyGPUSynapseToCPU(); /// Copy GPU Edge data to CPU.
 
    // Copied over from STDPFix
-   void copyCPUSynapseToGPU(); /// Copy CPU Synapse data to GPU.
+   void copyCPUSynapseToGPU(); /// Copy CPU Edge data to GPU.
 
    void reset(); /// Reset simulation objects.
 
@@ -65,11 +65,11 @@ public:
  *  Accessors
  ***********************************************/
 ///@{
-   int getWidth() const;   /// Width of neuron map (assumes square)
+   int getWidth() const;   /// Width of vertex map (assumes square)
 
-   int getHeight() const;  /// Height of neuron map
+   int getHeight() const;  /// Height of vertex map
 
-   int getTotalVertices() const;  /// Count of neurons in the simulation
+   int getTotalVertices() const;  /// Count of vertices in the simulation
 
    int getCurrentStep() const;    /// Current simulation step
 
@@ -79,7 +79,7 @@ public:
 
    int getMaxFiringRate() const;   /// Maximum firing rate. **GPU Only**
 
-   int getMaxEdgesPerVertex() const;   /// Maximum number of synapses per neuron. **GPU Only**
+   int getMaxEdgesPerVertex() const;   /// Maximum number of edges per vertex. **GPU Only**
 
    BGFLOAT getDeltaT() const;    /// Time elapsed between the beginning and end of the simulation step
 
@@ -135,11 +135,11 @@ private:
 
    void freeResources(); /// Frees dynamically allocated memory associated with the maps.
 
-   int width_; /// Width of neuron map (assumes square)
+   int width_; /// Width of vertex map (assumes square)
 
-   int height_;   /// Height of neuron map
+   int height_;   /// Height of vertex map
 
-   int totalNeurons_;   /// Count of neurons in the simulation
+   int totalNeurons_;   /// Count of vertices in the simulation
 
    int currentEpoch_;   /// Current epoch step
 
@@ -149,7 +149,7 @@ private:
 
    int maxFiringRate_;  /// Maximum firing rate. **GPU Only**
 
-   int maxEdgesPerVertex_;  /// Maximum number of synapses per neuron. **GPU Only**
+   int maxEdgesPerVertex_;  /// Maximum number of edges per vertex. **GPU Only**
 
    BGFLOAT deltaT_;   /// Inner Simulation Step Duration, purely investigative.
 

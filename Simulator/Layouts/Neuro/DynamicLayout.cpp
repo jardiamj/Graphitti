@@ -3,7 +3,7 @@
  *
  * @ingroup Simulator/Layouts
  * 
- * @brief The DynamicLayout class defines the layout of neurons in neural networks
+ * @brief The DynamicLayout class defines the layout of vertices in neural networks
  */
 
 #include "DynamicLayout.h"
@@ -27,7 +27,7 @@ void DynamicLayout::printParameters() const {
                                  << "\tfraction excitatory:" << fractionExcitatory_ << endl << endl);
 }
 
-///  Creates a randomly ordered distribution with the specified numbers of neuron types.
+///  Creates a randomly ordered distribution with the specified numbers of vertex types.
 ///
 ///  @param  numVertices number of the vertices to have in the type map.
 void DynamicLayout::generateVertexTypeMap(int numVertices) {
@@ -73,7 +73,7 @@ void DynamicLayout::generateVertexTypeMap(int numVertices) {
 
 ///  Populates the starter map.
 ///  Selects numEndogenouslyActiveNeurons_ excitatory neurons
-///  and converts them into starter neurons.
+///  and converts them into starter vertices.
 ///
 ///  @param  numVertices number of vertices to have in the map.
 void DynamicLayout::initStarterMap(const int numVertices) {
@@ -87,17 +87,17 @@ void DynamicLayout::initStarterMap(const int numVertices) {
                                  << "\tStarter Neurons: " << numEndogenouslyActiveNeurons_
                                  << endl);
 
-   // randomly set neurons as starters until we've created enough
+   // randomly set vertices as starters until we've created enough
    while (startersAllocated < numEndogenouslyActiveNeurons_) {
-      // Get a random neuron ID
+      // Get a random vertex ID
       int i = static_cast<int>(initRNG.inRange(0, numVertices));
 
-      // If the neuron at that index is excitatory and not already in the
+      // If the vertex at that index is excitatory and not already in the
       // starter map, add an entry.
       if (vertexTypeMap_[i] == EXC && !starterMap_[i]) {
          starterMap_[i] = true;
          startersAllocated++;
-         LOG4CPLUS_DEBUG(fileLogger_, "Allocated EA neuron at random index [" << i << "]" << endl;);
+         LOG4CPLUS_DEBUG(fileLogger_, "Allocated EA vertex at random index [" << i << "]" << endl;);
       }
    }
 
@@ -112,33 +112,33 @@ void DynamicLayout::loadParameters() {
    if (!ParameterManager::getInstance().getStringByXpath("//LayoutFiles/activeNListFileName/text()",
                                                          activeNListFilePath)) {
       throw runtime_error("In Layout::loadParameters() Endogenously "
-                          "active neuron list file path wasn't found and will not be initialized");
+                          "active vertex list file path wasn't found and will not be initialized");
    }
    if (!ParameterManager::getInstance().getStringByXpath("//LayoutFiles/inhNListFileName/text()",
                                                          inhibitoryNListFilePath)) {
       throw runtime_error("In Layout::loadParameters() "
-                          "Inhibitory neuron list file path wasn't found and will not be initialized");
+                          "inhibitory neuron list file path wasn't found and will not be initialized");
    }
 
    // Initialize Neuron Lists based on the data read from the xml files
    if (!ParameterManager::getInstance().getIntVectorByXpath(activeNListFilePath, "A", endogenouslyActiveNeuronList_)) {
       throw runtime_error("In Layout::loadParameters() "
-                          "Endogenously active neuron list file wasn't loaded correctly"
+                          "Endogenously active vertex list file wasn't loaded correctly"
                           "\n\tfile path: " + activeNListFilePath);
    }
    numEndogenouslyActiveNeurons_ = endogenouslyActiveNeuronList_.size();
    if (!ParameterManager::getInstance().getIntVectorByXpath(inhibitoryNListFilePath, "I", inhibitoryNeuronLayout_)) {
       throw runtime_error("In Layout::loadParameters() "
-                          "Inhibitory neuron list file wasn't loaded correctly."
+                          "inhibitory neuron list file wasn't loaded correctly."
                           "\n\tfile path: " + inhibitoryNListFilePath);
    }
 }
 
-///  Returns the type of synapse at the given coordinates
+///  Returns the type of edge at the given coordinates
 ///
-///  @param    srcVertex  integer that points to a Neuron in the type map as a source.
-///  @param    destVertex integer that points to a Neuron in the type map as a destination.
-///  @return type of the synapse.
+///  @param    srcVertex  source vertex index
+///  @param    destVertex destination vertex index
+///  @return   edge type
 edgeType DynamicLayout::edgType(const int srcVertex, const int destVertex) {
    if (vertexTypeMap_[srcVertex] == INH && vertexTypeMap_[destVertex] == INH)
       return II;

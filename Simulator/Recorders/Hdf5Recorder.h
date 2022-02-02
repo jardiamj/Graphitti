@@ -5,10 +5,10 @@
  *
  * @brief An implementation for recording spikes history on hdf5 file
  *
- * The Hdf5Recorder provides a mechanism for recording neuron's layout, spikes history,
+ * The Hdf5Recorder provides a mechanism for recording vertex's layout, spikes history,
  * and compile history information on hdf5 file:
- *     -# neuron's locations, and type map,
- *     -# individual neuron's spike rate in epochs,
+ *     -# vertex's locations, and type map,
+ *     -# individual vertex's spike rate in epochs,
  *     -# network wide burstiness index data in 1s bins,
  *     -# network wide spike count in 10ms bins.
  *
@@ -62,13 +62,13 @@ public:
 
    /// Compile history information in every epoch
    ///
-   /// @param[in] neurons   The entire list of neurons.
-   virtual void compileHistories(AllVertices &neurons) override;
+   /// @param[in] vertices   The entire list of vertices.
+   virtual void compileHistories(AllVertices &vertices) override;
 
    /// Writes simulation results to an output destination.
    ///
-   /// @param  neurons the Neuron list to search from.
-   virtual void saveSimData(const AllVertices &neurons) override;
+   /// @param  vertices the Neuron list to search from.
+   virtual void saveSimData(const AllVertices &vertices) override;
    
    /// Prints out all parameters to logging file.
    /// Registered to OperationManager as Operation::printParameters
@@ -103,10 +103,10 @@ protected:
    /// burstiness Histogram goes through the
    int* burstinessHist_;
 
-   /// spikes history - history of accumulated spikes count of all neurons (10 ms bin)
+   /// spikes history - history of accumulated spikes count of all vertices (10 ms bin)
    int *spikesHistory_;
 
-   /// track spikes count of probed neurons
+   /// track spikes count of probed vertices
    vector<uint64_t> *spikesProbedNeurons_;
 };
 

@@ -5,13 +5,13 @@
  *
  * @brief Header file for XmlGrowthRecorder.h
  *
- * The XmlGrowthRecorder provides a mechanism for recording neuron's layout, spikes history,
+ * The XmlGrowthRecorder provides a mechanism for recording vertex's layout, spikes history,
  * and compile history information on xml file:
- *     -# neuron's locations, and type map,
- *     -# individual neuron's spike rate in epochs,
+ *     -# vertex's locations, and type map,
+ *     -# individual vertex's spike rate in epochs,
  *     -# network wide burstiness index data in 1s bins,
  *     -# network wide spike count in 10ms bins,
- *     -# individual neuron's radius history of every epoch.
+ *     -# individual vertex's radius history of every epoch.
  *
  */
 
@@ -42,13 +42,13 @@ public:
 
    /// Compile history information in every epoch
    ///
-   /// @param[in] neurons   The entire list of neurons.
-   virtual void compileHistories(AllVertices &neurons) override;
+   /// @param[in] vertices   The entire list of vertices.
+   virtual void compileHistories(AllVertices &vertices) override;
 
    /// Writes simulation results to an output destination.
    ///
-   /// @param  neurons the Neuron list to search from.
-   virtual void saveSimData(const AllVertices &neurons) override;
+   /// @param  vertices the Neuron list to search from.
+   virtual void saveSimData(const AllVertices &vertices) override;
 
    ///  Prints out all parameters to logging file.
    ///  Registered to OperationManager as Operation::printParameters

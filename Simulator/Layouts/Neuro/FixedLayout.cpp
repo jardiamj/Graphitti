@@ -44,8 +44,8 @@ void FixedLayout::generateVertexTypeMap(int numVertices) {
 
    LOG4CPLUS_DEBUG(fileLogger_, "\nVERTEX TYPE MAP" << endl
    << "\tTotal vertices: " << numVertices << endl
-   << "\tInhibitory Neurons: " << numInhibitoryNeurons << endl
-   << "\tExcitatory Neurons: " << numExcititoryNeurons << endl);
+   << "\tInhibitory Vertices: " << numInhibitoryNeurons << endl
+   << "\tExcitatory Vertices: " << numExcititoryNeurons << endl);
 
    for (int i = 0; i < numInhibitoryNeurons; i++) {
       assert(inhibitoryNeuronLayout_.at(i) < numVertices);
@@ -56,7 +56,7 @@ void FixedLayout::generateVertexTypeMap(int numVertices) {
 }
 
 ///  Populates the starter map.
-///  Selects \e numStarter excitory neurons and converts them into starter neurons.
+///  Selects \e numStarter excitory vertices and converts them into starter vertices.
 ///  @param  numVertices number of vertices to have in the map.
 void FixedLayout::initStarterMap(const int numVertices) {
    Layout::initStarterMap(numVertices);
@@ -75,33 +75,33 @@ void FixedLayout::loadParameters() {
    if (!ParameterManager::getInstance().getStringByXpath("//LayoutFiles/activeNListFileName/text()",
                                                          activeNListFilePath)) {
       throw runtime_error("In Layout::loadParameters() Endogenously "
-                          "active neuron list file path wasn't found and will not be initialized");
+                          "active vertex list file path wasn't found and will not be initialized");
    }
    if (!ParameterManager::getInstance().getStringByXpath("//LayoutFiles/inhNListFileName/text()",
                                                          inhibitoryNListFilePath)) {
       throw runtime_error("In Layout::loadParameters() "
-                          "Inhibitory neuron list file path wasn't found and will not be initialized");
+                          "inhibitory neuron list file path wasn't found and will not be initialized");
    }
 
    // Initialize Neuron Lists based on the data read from the xml files
    if (!ParameterManager::getInstance().getIntVectorByXpath(activeNListFilePath, "A", endogenouslyActiveNeuronList_)) {
       throw runtime_error("In Layout::loadParameters() "
-                          "Endogenously active neuron list file wasn't loaded correctly"
+                          "Endogenously active vertex list file wasn't loaded correctly"
                           "\n\tfile path: " + activeNListFilePath);
    }
    numEndogenouslyActiveNeurons_ = endogenouslyActiveNeuronList_.size();
    if (!ParameterManager::getInstance().getIntVectorByXpath(inhibitoryNListFilePath, "I", inhibitoryNeuronLayout_)) {
       throw runtime_error("In Layout::loadParameters() "
-                          "Inhibitory neuron list file wasn't loaded correctly."
+                          "inhibitory neuron list file wasn't loaded correctly."
                           "\n\tfile path: " + inhibitoryNListFilePath);
    }
 }
 
-///  Returns the type of synapse at the given coordinates
+///  Returns the type of edge at the given coordinates
 ///
-///  @param    srcVertex  integer that points to a Neuron in the type map as a source.
-///  @param    destVertex integer that points to a Neuron in the type map as a destination.
-///  @return type of the synapse.
+///  @param    srcVertex  source vertex index
+///  @param    destVertex destination vertex index
+///  @return type of the edge.
 edgeType FixedLayout::edgType(const int srcVertex, const int destVertex) {
    if (vertexTypeMap_[srcVertex] == INH && vertexTypeMap_[destVertex] == INH)
       return II;

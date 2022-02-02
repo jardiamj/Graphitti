@@ -3,7 +3,7 @@
  *
  * @ingroup Simulator/Layouts
  * 
- * @brief The Layout class defines the layout of neurons in neural networks
+ * @brief The Layout class defines the layout of vertices in graph-based networks
  */
 
 #include "Layout.h"
@@ -16,7 +16,7 @@
 
 /// Constructor
 Layout::Layout() :
-      numEndogenouslyActiveNeurons_(0),
+      numEndogenouslyActiveNeurons_(0), // TODO: move to lower level - tori
       gridLayout_(true) {
    xloc_ = nullptr;
    yloc_ = nullptr;
@@ -25,7 +25,7 @@ Layout::Layout() :
    vertexTypeMap_ = nullptr;
    starterMap_ = nullptr;
 
-   // Create Vertices/Neurons class using type definition in configuration file
+   // Create Vertices class using type definition in configuration file
    string type;
    ParameterManager::getInstance().getStringByXpath("//VerticesParams/@class", type);
    vertices_ = VerticesFactory::getInstance()->createVertices(type);
@@ -75,7 +75,7 @@ void Layout::setupLayout() {
    dist2_ = new CompleteMatrix(MATRIX_TYPE, MATRIX_INIT, numVertices, numVertices);
    dist_ = new CompleteMatrix(MATRIX_TYPE, MATRIX_INIT, numVertices, numVertices);
 
-   // Initialize neuron locations memory, grab global info
+   // Initialize vertex locations memory, grab global info
    initVerticesLocs();
 
    // computing distance between each pair of vertices given each vertex's xy location
@@ -99,17 +99,18 @@ void Layout::setupLayout() {
 }
 
 
-/// Prints out all parameters to logging file. Registered to OperationManager as Operation::printParameters
+/// Prints out all parameters to logging file. Registered to OperationManager as Operation::printParameters 
+// TODO: move to lower level - tori
 void Layout::printParameters() const {
    stringstream output;
    output << "\nLAYOUT PARAMETERS" << endl;
-   output << "\tEndogenously active neuron positions: ";
+   output << "\tEndogenously active vertex positions: ";
    for (BGSIZE i = 0; i < numEndogenouslyActiveNeurons_; i++) {
        output << endogenouslyActiveNeuronList_[i] << " ";
    }
    output << endl;
 
-   output << "\tInhibitory neuron positions: ";
+   output << "\tinhibitory neuron positions: ";
    for (BGSIZE i = 0; i < inhibitoryNeuronLayout_.size(); i++) {
       output << inhibitoryNeuronLayout_[i] << " ";
    }
@@ -129,7 +130,6 @@ void Layout::generateVertexTypeMap(int numVertices) {
 }
 
 /// Populates the starter map.
-/// Selects num_endogenously_active_neurons excitory neurons and converts them into starter neurons.
 /// @param  numVertices number of vertices to have in the map.
 void Layout::initStarterMap(const int numVertices) {
    for (int i = 0; i < numVertices; i++) {

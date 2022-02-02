@@ -8,12 +8,12 @@
  * This is the base class of all spiking neuron classes.
  *
  * The class uses a data-centric structure, which utilizes a structure as the containers of
- * all neuron.
+ * all vertices.
  *
- * The container holds neuron parameters of all neurons.
- * Each kind of neuron parameter is stored in a 1D array, of which length
- * is number of all neurons. Each array of a neuron parameter is pointed by a
- * corresponding member variable of the neuron parameter in the class.
+ * The container holds neuron parameters of all vertices.
+ * Each kind of vertex parameter is stored in a 1D array, of which length
+ * is number of all vertices. Each array of a vertex parameter is pointed by a
+ * corresponding member variable of the vertex parameter in the class.
  * 
  * This structure was originally designed for the GPU implementation of the
  * simulator, and this refactored version of the simulator simply uses that design for
@@ -38,18 +38,18 @@ public:
    virtual ~AllSpikingNeurons();
 
    ///  Setup the internal structure of the class.
-   ///  Allocate memories to store all neurons' state.
+   ///  Allocate memories to store all vertices' state.
    virtual void setupVertices() override;
 
-   ///  Clear the spike counts out of all Neurons.
+   ///  Clear the spike counts out of all Vertices.
    void clearSpikeCounts();
 
 #if defined(USE_GPU)
    public:
        ///  Set some parameters used for advanceVerticesDevice.
        ///
-       ///  @param  synapses               Reference to the allEdges struct on host memory.
-       virtual void setAdvanceVerticesDeviceParams(AllEdges &synapses);
+       ///  @param  edges               Reference to the allEdges struct on host memory.
+       virtual void setAdvanceVerticesDeviceParams(AllEdges &edges);
 
        ///  Copy spike counts data stored in device memory to host.
        ///
@@ -61,7 +61,7 @@ public:
        ///  @param  allVerticesDevice   GPU address of the allVertices struct on device memory.
        virtual void copyNeuronDeviceSpikeHistoryToHost( void* allVerticesDevice) = 0;
 
-       ///  Clear the spike counts out of all neurons.
+       ///  Clear the spike counts out of all vertices.
        ///
        ///  @param  allVerticesDevice   GPU address of the allVertices struct on device memory.
        virtual void clearNeuronSpikeCounts( void* allVerticesDevice) = 0;
@@ -79,7 +79,7 @@ public:
        ///  @param  allVerticesDevice   GPU address of the allVertices struct on device memory.
        void copyDeviceSpikeCountsToHost( AllSpikingNeuronsDeviceProperties& allVerticesDevice);
 
-       ///  Clear the spike counts out of all neurons in device memory.
+       ///  Clear the spike counts out of all vertices in device memory.
        ///  (helper function of clearNeuronSpikeCounts)
        ///
        ///  @param  allVerticesDevice   GPU address of the allVertices struct on device memory.
@@ -88,35 +88,35 @@ public:
 
 public:
    ///  Update internal state of the indexed Neuron (called by every simulation step).
-   ///  Notify outgoing synapses if neuron has fired.
+   ///  Notify outgoing edges if vertex has fired.
    ///
-   ///  @param  synapses         The Synapse list to search from.
+   ///  @param  edges         The Edge list to search from.
    ///  @param  edgeIndexMap  Reference to the EdgeIndexMap.
-   virtual void advanceVertices(AllEdges &synapses, const EdgeIndexMap *edgeIndexMap);
+   virtual void advanceVertices(AllEdges &edges, const EdgeIndexMap *edgeIndexMap);
 
-   /// Get the spike history of neuron[index] at the location offIndex.
+   /// Get the spike history of vertex[index] at the location offIndex.
    /// More specifically, retrieves the global simulation time step for the spike
    /// in question from the spike history record.
    ///
-   /// @param  index            Index of the neuron to get spike history.
+   /// @param  index            neuron index to get spike history.
    /// @param  offIndex         Offset of the history buffer to get from.
    uint64_t getSpikeHistory(int index, int offIndex);
 
 protected:
-   ///  Helper for #advanceNeuron. Updates state of a single neuron.
+   ///  Helper for #advanceNeuron. Updates state of a single vertex.
    ///
-   ///  @param  index            Index of the neuron to update.
+   ///  @param  index            neuron index to update.
    virtual void advanceNeuron(const int index) = 0;
 
-   ///  Initiates a firing of a neuron to connected neurons
+   ///  Initiates a firing of a vertex to connected vertices
    ///
-   ///  @param  index            Index of the neuron to fire.
+   ///  @param  index            neuron index to fire.
    virtual void fire(const int index) const;
 
 #endif // defined(USE_GPU)
 
 public:
-   ///  The booleans which track whether the neuron has fired.
+   ///  The booleans which track whether the vertex has fired.
    bool *hasFired_;
 
    ///  The number of spikes since the last growth cycle.
@@ -125,8 +125,8 @@ public:
    ///  Offset of the spike_history buffer.
    int *spikeCountOffset_;
 
-   ///  Step count (history) for each spike fired by each neuron.
-   ///  The step counts are stored in a buffer for each neuron, and the pointers
+   ///  Step count (history) for each spike fired by each vertex.
+   ///  The step counts are stored in a buffer for each vertex, and the pointers
    ///  to the buffer are stored in a list pointed by spike_history.
    ///  Each buffer is a circular, and offset of top location of the buffer i is
    ///  specified by spikeCountOffset[i].
@@ -142,7 +142,7 @@ protected:
 #if defined(USE_GPU)
 struct AllSpikingNeuronsDeviceProperties : public AllVerticesDeviceProperties
 {
-        ///  The booleans which track whether the neuron has fired.
+        ///  The booleans which track whether the vertex has fired.
         bool *hasFired_;
 
         ///  The number of spikes since the last growth cycle.
@@ -151,8 +151,8 @@ struct AllSpikingNeuronsDeviceProperties : public AllVerticesDeviceProperties
         ///  Offset of the spike_history buffer.
         int *spikeCountOffset_;
 
-        ///  Step count (history) for each spike fired by each neuron.
-        ///  The step counts are stored in a buffer for each neuron, and the pointers
+        ///  Step count (history) for each spike fired by each vertex.
+        ///  The step counts are stored in a buffer for each vertex, and the pointers
         ///  to the buffer are stored in a list pointed by spike_history. 
         ///  Each buffer is a circular, and offset of top location of the buffer i is
         ///  specified by spikeCountOffset[i].

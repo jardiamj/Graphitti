@@ -7,25 +7,25 @@
  *
  * The Model class maintains and manages classes of objects that make up
  * essential components of graph-based networks.
- *    -# AllVertices: A class to define a list of particular type of neurons.
- *    -# AllEdges: A class to define a list of particular type of synapses.
+ *    -# AllVertices: A class to define a list of particular type of vertices.
+ *    -# AllEdges: A class to define a list of particular type of edges.
  *    -# Connections: A class to define connections of the neural network.
- *    -# Layout: A class to define neurons' layout information in the network.
+ *    -# Layout: A class to define vertices' layout information in the network.
  *
- * The network is composed of 3 superimposed 2-d arrays: neurons, synapses, and
+ * The network is composed of 3 superimposed 2-d arrays: vertices, edges, and
  * summation points.
  *
- * Synapses in the synapse map are located at the coordinates of the neuron
- * from which they receive output.  Each synapse stores a pointer into a
+ * Edges in the edge map are located at the coordinates of the vertex
+ * from which they receive output.  Each edge stores a pointer into a
  * summation point.
  *
- * If, during an advance cycle, a neuron \f$A\f$ at coordinates \f$x,y\f$ fires, every synapse
- * which receives output is notified of the spike. Those synapses then hold
+ * If, during an advance cycle, a vertex \f$A\f$ at coordinates \f$x,y\f$ fires, every edge
+ * which receives output is notified of the spike. Those edges then hold
  * the spike until their delay period is completed.  At a later advance cycle, once the delay
- * period has been completed, the synapses apply their PSRs (Post-Synaptic-Response) to
+ * period has been completed, the edges apply their PSRs (Post-Synaptic-Response) to
  * the summation points.
  *
- * Finally, on the next advance cycle, each neuron \f$B\f$ adds the value stored
+ * Finally, on the next advance cycle, each vertex \f$B\f$ adds the value stored
  * in their corresponding summation points to their \f$V_m\f$ and resets the summation points to
  * zero.
  *
@@ -86,14 +86,14 @@ public:
    /// Advances network state one simulation step.
    virtual void advance() override;
 
-   /// Modifies connections between neurons based on current state of the network and behavior
+   /// Modifies connections between vertices based on current state of the network and behavior
    /// over the past epoch. Should be called once every epoch.
    virtual void updateConnections() override;
 
-   /// Copy GPU Synapse data to CPU.
+   /// Copy GPU Edge data to CPU.
    virtual void copyGPUtoCPU() override;
 
-   /// Copy CPU Synapse data to GPU.
+   /// Copy CPU Edge data to GPU.
    virtual void copyCPUtoGPU() override;
 
    /// Print out SynapseProps on the GPU.
@@ -101,25 +101,25 @@ public:
 
 protected:
    /// Allocates  and initializes memories on CUDA device.
-   /// @param[out] allVerticesDevice          Memory location of the pointer to the neurons list on device memory.
-   /// @param[out] allEdgesDevice         Memory location of the pointer to the synapses list on device memory.
+   /// @param[out] allVerticesDevice          Memory location of the pointer to the vertices list on device memory.
+   /// @param[out] allEdgesDevice         Memory location of the pointer to the edges list on device memory.
    void allocDeviceStruct(void **allVerticesDevice, void **allEdgesDevice);
 
    /// Copies device memories to host memories and deallocates them.
-   /// @param[out] allVerticesDevice          Memory location of the pointer to the neurons list on device memory.
-   /// @param[out] allEdgesDevice         Memory location of the pointer to the synapses list on device memory.
+   /// @param[out] allVerticesDevice          Memory location of the pointer to the vertices list on device memory.
+   /// @param[out] allEdgesDevice         Memory location of the pointer to the edges list on device memory.
    virtual void deleteDeviceStruct(void **allVerticesDevice, void **allEdgesDevice);
 
-   /// Add psr of all incoming synapses to summation points.
+   /// Add psr of all incoming edges to summation points.
    virtual void calcSummationMap();
 
    /// Pointer to device random noise array.
    float *randNoise_d;
 
-   /// Pointer to synapse index map in device memory.
-   EdgeIndexMap *synapseIndexMapDevice_;
+   /// Pointer to edge index map in device memory.
+   EdgeIndexMap *edgeIndexMapDevice_;
 
-   /// Synapse structures in device memory.
+   /// Edge structures in device memory.
    AllSpikingSynapsesDeviceProperties *allEdgesDevice_;
 
    /// Neuron structure in device memory.
@@ -132,21 +132,21 @@ private:
 
 public: //2020/03/14 changed to public for accessing in Driver
 
-   void copySynapseIndexMapHostToDevice(EdgeIndexMap &synapseIndexMapHost, int numVertices);
+   void copyEdgeIndexMapHostToDevice(EdgeIndexMap &synapseIndexMapHost, int numVertices);
 
 private:
 
    void updateHistory();
 
    // TODO
-   void eraseEdge(AllEdges &synapses, const int neuronIndex, const int synapseIndex);
+   void eraseEdge(AllEdges &edges, const int neuronIndex, const int edgeIndex);
 
    // TODO
-   void addEdge(AllEdges &synapses, edgeType type, const int srcVertex, const int destVertex,
+   void addEdge(AllEdges &edges, edgeType type, const int srcVertex, const int destVertex,
                    Coordinate &source, Coordinate &dest, BGFLOAT *sumPoint, BGFLOAT deltaT);
 
    // TODO
-   void createEdge(AllEdges &synapses, const int neuronIndex, const int synapseIndex,
+   void createEdge(AllEdges &edges, const int neuronIndex, const int edgeIndex,
                       Coordinate source, Coordinate dest, BGFLOAT *sp, BGFLOAT deltaT, edgeType type);
 };
 
@@ -159,6 +159,6 @@ void initMTGPU(unsigned int seed, unsigned int blocks, unsigned int threads, uns
 //! Calculate summation point.
 extern __global__ void calcSummationMapDevice(int totalVertices,
           AllSpikingNeuronsDeviceProperties* __restrict__ allNeurnsDevice,
-          const EdgeIndexMap* __restrict__ synapseIndexMapDevice_,
+          const EdgeIndexMap* __restrict__ edgeIndexMapDevice_,
                     const AllSpikingSynapsesDeviceProperties* __restrict__ allEdgesDevice );
 #endif

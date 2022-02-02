@@ -61,13 +61,13 @@ public:
 
 
 // caller casting
-void advanceEdge(AllSpikingNeurons* neurons) {
-    int result = neurons->test1();
+void advanceEdge(AllSpikingNeurons* vertices) {
+    int result = vertices->test1();
 }
 
 // callee casting
-void advanceEdge(IAllVertices* neurons) {
-    AllSpikingNeurons* spNeurons = dynamic_cast<AllSpikingNeurons*>(neurons);
+void advanceEdge(IAllVertices* vertices) {
+    AllSpikingNeurons* spNeurons = dynamic_cast<AllSpikingNeurons*>(vertices);
     int result = spNeurons->test1();
 }
 

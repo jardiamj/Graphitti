@@ -3,14 +3,14 @@
  * 
  * @ingroup Simulator/Layouts
  *
- * @brief The Layout class defines the layout of neurons in neural networks
+ * @brief The Layout class defines the layout of vertices in graph-based networks
  * 
- * Implementation:
- * The Layout class maintains neurons locations (x, y coordinates),
- * distance of every couple neurons,
- * neurons type map (distribution of excitatory and inhibitory neurons),
- * and starter neurons map
- * (distribution of endogenously active neurons).  
+ * The Layout class is the manager class for Vertices and is managed by Model. 
+ * The Layout class maintains vertices locations (x, y coordinates),
+ * distance of every couple vertices,
+ * vertices type map,
+ * and starter vertices map
+ * 
  */
 
 #pragma once
@@ -46,53 +46,53 @@ public:
    /// Prints out all parameters to logging file. Registered to OperationManager as Operation::printParameters
    virtual void printParameters() const;
 
-   /// Creates a neurons type map.
-   /// @param  numVertices number of the neurons to have in the type map.
+   /// Creates a vertices type map.
+   /// @param  numVertices number of the vertices to have in the type map.
    virtual void generateVertexTypeMap(int numVertices);
 
    /// Populates the starter map.
-   /// Selects num_endogenously_active_neurons excitory neurons
-   /// and converts them into starter neurons.
+   /// Selects num_endogenously_active_vertices excitory vertices
+   /// and converts them into starter vertices.
    /// @param  numVertices number of vertices to have in the map.
    virtual void initStarterMap(const int numVertices);
 
-   /// Returns the type of synapse at the given coordinates
-   /// @param    srcVertex  integer that points to a Neuron in the type map as a source.
-   /// @param    destVertex integer that points to a Neuron in the type map as a destination.
-   /// @return type of the synapse.
+   /// Returns the type of edge at the given coordinates
+   /// @param    srcVertex  source vertex index
+   /// @param    destVertex destination vertex index
+   /// @return type of the edge.
    virtual edgeType edgType(const int srcVertex, const int destVertex) = 0;
 
-   VectorMatrix *xloc_;  ///< Store neuron i's x location.
+   VectorMatrix *xloc_;  ///< Store vertex i's x location.
 
-   VectorMatrix *yloc_;   ///< Store neuron i's y location.
+   VectorMatrix *yloc_;   ///< Store vertex i's y location.
 
-   CompleteMatrix *dist2_;  ///< Inter-neuron distance squared.
+   CompleteMatrix *dist2_;  ///< Inter-vertex distance squared.
 
-   CompleteMatrix *dist_;    ///< The true inter-neuron distance.
+   CompleteMatrix *dist_;    ///< The true inter-vertex distance.
 
-   vector<int> probedNeuronList_;   ///< Probed neurons list. // ToDo: Move this to Hdf5 recorder once its implemented in project -chris
+   vector<int> probedNeuronList_;   ///< Probed vertices list. // ToDo: Move this to Hdf5 recorder once its implemented in project -chris
 
-   vertexType *vertexTypeMap_;    ///< The vertex type map (INH, EXC).
+   vertexType *vertexTypeMap_;    ///< The vertex type map.
 
    bool *starterMap_; ///< The starter existence map (T/F).
 
-   BGSIZE numEndogenouslyActiveNeurons_;    ///< Number of endogenously active neurons.
+   BGSIZE numEndogenouslyActiveNeurons_;    ///< Number of endogenously active vertices. TODO: move to lower level - tori
 
-   BGSIZE numCallerVertices_;    ///< Number of caller vertices.
+   BGSIZE numCallerVertices_;    ///< Number of caller vertices. TODO: move to lower level - tori
 
 
 protected:
    shared_ptr<AllVertices> vertices_;
 
-   vector<int> endogenouslyActiveNeuronList_;    ///< Endogenously active neurons list.
+   vector<int> endogenouslyActiveNeuronList_;    ///< Endogenously active vertices list. TODO: move to lower level - tori
 
-   vector<int> inhibitoryNeuronLayout_;    ///< Inhibitory neurons list.
+   vector<int> inhibitoryNeuronLayout_;    ///< Inhibitory vertices list. TODO: move to lower level - tori
 
-   vector<int> callerVertexList_;    ///< Caller vertex list.
+   vector<int> callerVertexList_;    ///< Caller vertex list. TODO: move to lower level - tori
 
-   vector<int> psapVertexList_;    ///< PSAP vertex list.
+   vector<int> psapVertexList_;    ///< PSAP vertex list. TODO: move to lower level - tori
    
-   vector<int> responderVertexList_;    ///< Responder vertex list.
+   vector<int> responderVertexList_;    ///< Responder vertex list. TODO: move to lower level - tori
 
    log4cplus::Logger fileLogger_;
 

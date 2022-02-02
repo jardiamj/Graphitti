@@ -5,13 +5,13 @@
  *
  * @brief An implementation for recording spikes history on hdf5 file
  * 
- * The Hdf5GrowthRecorder provides a mechanism for recording neuron's layout, spikes history,
+ * The Hdf5GrowthRecorder provides a mechanism for recording vertex's layout, spikes history,
  * and compile history information on hdf5 file:
- *     -# neuron's locations, and type map,
- *     -# individual neuron's spike rate in epochs,
+ *     -# vertex's locations, and type map,
+ *     -# individual vertex's spike rate in epochs,
  *     -# network wide burstiness index data in 1s bins,
  *     -# network wide spike count in 10ms bins,
- *     -# individual neuron's radius history of every epoch.
+ *     -# individual vertex's radius history of every epoch.
  *
  * Hierarchical Data Format (HDF) is a set of file formats (HDF4, HDF5) designed 
  * to store and organize large amounts of data. 
@@ -57,8 +57,8 @@ public:
    virtual void term() override;
 
    /// Compile history information in every epoch
-   /// @param[in] neurons   The entire list of neurons.
-   virtual void compileHistories(AllVertices &neurons) override;
+   /// @param[in] vertices   The entire list of vertices.
+   virtual void compileHistories(AllVertices &vertices) override;
    
    
    ///  Prints out all parameters to logging file.

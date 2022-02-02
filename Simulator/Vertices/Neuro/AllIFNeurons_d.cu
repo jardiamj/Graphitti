@@ -9,7 +9,7 @@
 #include "AllIFNeurons.h"
 #include "Book.h"
 
-///  Allocate GPU memories to store all neurons' states,
+///  Allocate GPU memories to store all vertices' states,
 ///  and copy them from host to GPU memory.
 ///
 ///  @param  allVerticesDevice   GPU address of the AllIFNeuronsDeviceProperties struct on device memory.
@@ -22,7 +22,7 @@ void AllIFNeurons::allocNeuronDeviceStruct( void** allVerticesDevice ) {
         HANDLE_ERROR( cudaMemcpy ( *allVerticesDevice, &allNeurons, sizeof( AllIFNeuronsDeviceProperties ), cudaMemcpyHostToDevice ) );
 }
 
-///  Allocate GPU memories to store all neurons' states.
+///  Allocate GPU memories to store all vertices' states.
 ///  (Helper function of allocNeuronDeviceStruct)
 ///
 ///  @param  allVerticesDevice         GPU address of the AllIFNeuronsDeviceProperties struct.
@@ -113,7 +113,7 @@ void AllIFNeurons::deleteDeviceStruct( AllIFNeuronsDeviceProperties& allVertices
 	HANDLE_ERROR( cudaFree( allVerticesDevice.spikeHistory_ ) );
 }
 
-///  Copy all neurons' data from host to device.
+///  Copy all vertices' data from host to device.
 ///
 ///  @param  allVerticesDevice   GPU address of the AllIFNeuronsDeviceProperties struct on device memory.
 void AllIFNeurons::copyNeuronHostToDevice( void* allVerticesDevice ) { 
@@ -123,7 +123,7 @@ void AllIFNeurons::copyNeuronHostToDevice( void* allVerticesDevice ) {
 	copyHostToDevice( allVerticesDeviceProps );
 }
 
-///  Copy all neurons' data from host to device.
+///  Copy all vertices' data from host to device.
 ///  (Helper function of copyNeuronHostToDevice)
 ///
 ///  @param  allVerticesDevice         GPU address of the AllIFNeuronsDeviceProperties struct.
@@ -158,7 +158,7 @@ void AllIFNeurons::copyHostToDevice( AllIFNeuronsDeviceProperties& allVerticesDe
         }
 }
 
-///  Copy all neurons' data from device to host.
+///  Copy all vertices' data from device to host.
 ///
 ///  @param  allVerticesDevice   GPU address of the AllIFNeuronsDeviceProperties struct on device memory.
 void AllIFNeurons::copyNeuronDeviceToHost( void* allVerticesDevice ) {
@@ -168,7 +168,7 @@ void AllIFNeurons::copyNeuronDeviceToHost( void* allVerticesDevice ) {
 	copyDeviceToHost( allVerticesDeviceProps );
 }
 
-///  Copy all neurons' data from device to host.
+///  Copy all vertices' data from device to host.
 ///  (Helper function of copyNeuronDeviceToHost)
 ///
 ///  @param  allVerticesDevice         GPU address of the AllIFNeuronsDeviceProperties struct.
@@ -223,7 +223,7 @@ void AllIFNeurons::copyNeuronDeviceSpikeCountsToHost( void* allVerticesDevice )
         AllSpikingNeurons::copyDeviceSpikeCountsToHost( allVerticesDeviceProps );
 }
 
-///  Clear the spike counts out of all neurons.
+///  Clear the spike counts out of all vertices.
 ///
 ///  @param  allVerticesDevice   GPU address of the AllIFNeuronsDeviceProperties struct on device memory.
 void AllIFNeurons::clearNeuronSpikeCounts( void* allVerticesDevice )
@@ -234,16 +234,16 @@ void AllIFNeurons::clearNeuronSpikeCounts( void* allVerticesDevice )
 }
 
 
-///  Update the state of all neurons for a time step
-///  Notify outgoing synapses if neuron has fired.
+///  Update the state of all vertices for a time step
+///  Notify outgoing edges if vertex has fired.
 ///
-///  @param  synapses               Reference to the allEdges struct on host memory.
+///  @param  edges               Reference to the allEdges struct on host memory.
 ///  @param  allVerticesDevice       GPU address of the AllIFNeuronsDeviceProperties struct 
 ///                                 on device memory.
 ///  @param  allEdgesDevice      GPU address of the allEdgesDeviceProperties struct 
 ///                                 on device memory.
 ///  @param  randNoise              Reference to the random noise array.
 ///  @param  edgeIndexMapDevice  GPU address of the EdgeIndexMap on device memory.
-void AllIFNeurons::advanceVertices( AllEdges &synapses, void* allVerticesDevice, void* allEdgesDevice, float* randNoise, EdgeIndexMap* edgeIndexMapDevice )
+void AllIFNeurons::advanceVertices( AllEdges &edges, void* allVerticesDevice, void* allEdgesDevice, float* randNoise, EdgeIndexMap* edgeIndexMapDevice )
 {
 }

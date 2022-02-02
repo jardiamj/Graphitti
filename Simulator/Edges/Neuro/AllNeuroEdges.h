@@ -53,14 +53,14 @@ public:
    ///  @param  deltaT   Inner simulation step duration
    virtual void resetEdge(const BGSIZE iEdg, const BGFLOAT deltaT);
 
-   // ///  Create a Synapse and connect it to the model.
+   // ///  Create a Edge and connect it to the model.
    // ///
    // ///  @param  iEdg        Index of the edge to set.
    // ///  @param  source      Coordinates of the source Neuron.
    // ///  @param  dest        Coordinates of the destination Neuron.
    // ///  @param  sumPoint    Summation point address.
    // ///  @param  deltaT      Inner simulation step duration.
-   // ///  @param  type        Type of the Synapse to create.
+   // ///  @param  type        Type of the Edge to create.
    // virtual void createEdge(const BGSIZE iEdg, int srcVertex, int destVertex, BGFLOAT *sumPoint, const BGFLOAT deltaT,
    //                            edgeType type) override;
 
@@ -80,7 +80,7 @@ protected:
    ///  @param  maxEdges  Maximum number of edges per vertex.
    virtual void setupEdges(const int numVertices, const int maxEdges) override;
 
-   ///  Sets the data for Synapse to input's data.
+   ///  Sets the data for Edge to input's data.
    ///
    ///  @param  input  istream to read from.
    ///  @param  iEdg   Index of the edge to set.
@@ -112,7 +112,7 @@ struct AllEdgesDeviceProperties
         ///   The weight (scaling factor, strength, maximal amplitude) of the edge.
          BGFLOAT *W_;
 
-        ///  Synapse type
+        ///  Edge type
         edgeType *type_;
 
         ///  The post-synaptic response is the result of whatever computation

@@ -148,7 +148,7 @@ protected:
        ///  @param  allEdgesDevice  GPU address of the allEdges struct on device memory.
        virtual void copyDeviceEdgeSumIdxToHost(void* allEdgesDevice) = 0;
 
-       ///  Advance all the Synapses in the simulation.
+       ///  Advance all the Edges in the simulation.
        ///  Update the state of all edges for a time step.
        ///
        ///  @param  allEdgesDevice      GPU address of the allEdges struct on device memory.
@@ -208,7 +208,7 @@ public:
    ///  This edge's summation point's address.
    BGFLOAT **summationPoint_;
 
-   ///   Synapse type
+   ///   Edge type
    edgeType *type_;
 
    ///  The boolean value indicating the entry in the array is in use.

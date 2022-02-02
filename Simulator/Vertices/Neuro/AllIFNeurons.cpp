@@ -127,7 +127,7 @@ void AllIFNeurons::loadParameters() {
    ParameterManager::getInstance().getBGFloatByXpath("//starter_vreset/max/text()", starterVresetRange_[1]);
 }
 
-///  Prints out all parameters of the neurons to logging file.
+///  Prints out all parameters of the vertices to logging file.
 ///  Registered to OperationManager as Operation::printParameters
 void AllIFNeurons::printParameters() const {
    AllVertices::printParameters();
@@ -159,7 +159,7 @@ void AllIFNeurons::printParameters() const {
                          << endl << endl);
 }
 
-///  Creates all the Neurons and generates data for them.
+///  Creates all the Vertices and generates data for them.
 ///
 ///  @param  layout      Layout information of the neural network.
 void AllIFNeurons::createAllVertices(Layout *layout) {
@@ -167,17 +167,17 @@ void AllIFNeurons::createAllVertices(Layout *layout) {
    for (int i = 0; i < Simulator::getInstance().getTotalVertices(); i++) {
       setNeuronDefaults(i);
 
-      // set the neuron info for neurons
+      // set the vertex info for vertices
       createNeuron(i, layout);
    }
 }
 
 ///  Creates a single Neuron and generates data for it.
 ///
-///  @param  i Index of the neuron to create.
+///  @param  i neuron index to create.
 ///  @param  layout       Layout information of the neural network.
 void AllIFNeurons::createNeuron(int i, Layout *layout) {
-   // set the neuron info for neurons
+   // set the neuron info for vertices
    Iinject_[i] = initRNG.inRange(IinjectRange_[0], IinjectRange_[1]);
    Inoise_[i] = initRNG.inRange(InoiseRange_[0], InoiseRange_[1]);
    Vthresh_[i] = initRNG.inRange(VthreshRange_[0], VthreshRange_[1]);
@@ -235,7 +235,7 @@ void AllIFNeurons::createNeuron(int i, Layout *layout) {
 
 ///  Set the Neuron at the indexed location to default values.
 ///
-///  @param  index    Index of the Neuron that the synapse belongs to.
+///  @param  index    Neuron Index
 void AllIFNeurons::setNeuronDefaults(const int index) {
    Cm_[index] = DEFAULT_Cm;
    Rm_[index] = DEFAULT_Rm;
@@ -251,7 +251,7 @@ void AllIFNeurons::setNeuronDefaults(const int index) {
 
 ///  Initializes the Neuron constants at the indexed location.
 ///
-///  @param  i    Index of the Neuron.
+///  @param  i    Neuron Index
 ///  @param  deltaT          Inner simulation step duration
 void AllIFNeurons::initNeuronConstsFromParamValues(int i, const BGFLOAT deltaT) {
    BGFLOAT &Tau = this->Tau_[i];
@@ -278,10 +278,10 @@ void AllIFNeurons::initNeuronConstsFromParamValues(int i, const BGFLOAT deltaT) 
    }
 }
 
-///  Outputs state of the neuron chosen as a string.
+///  Outputs state of the vertex chosen as a string.
 ///
-///  @param  index  index of the neuron (in neurons) to output info from.
-///  @return the complete state of the neuron.
+///  @param  index  neuron index to output info from.
+///  @return the complete state of the vertex.
 string AllIFNeurons::toString(const int index) const {
    stringstream ss;
    ss << "Cm: " << Cm_[index] << " "; // membrane capacitance
@@ -303,7 +303,7 @@ string AllIFNeurons::toString(const int index) const {
    return ss.str();
 }
 
-///  Sets the data for Neurons to input's data.
+///  Sets the data for Vertices to input's data.
 ///
 ///  @param  input       istream to read from.
 void AllIFNeurons::deserialize(istream &input) {
@@ -315,7 +315,7 @@ void AllIFNeurons::deserialize(istream &input) {
 ///  Sets the data for Neuron #index to input's data.
 ///
 ///  @param  input       istream to read from.
-///  @param  i           index of the neuron (in neurons).
+///  @param  i           Neuron Index
 void AllIFNeurons::readNeuron(istream &input, int i) {
    // input.ignore() so input skips over end-of-line characters.
    input >> Cm_[i];
@@ -354,7 +354,7 @@ void AllIFNeurons::readNeuron(istream &input, int i) {
    input.ignore();
 }
 
-///  Writes out the data in Neurons.
+///  Writes out the data in Vertices.
 ///
 ///  @param  output      stream to write out to.
 void AllIFNeurons::serialize(ostream &output) const {
@@ -366,7 +366,7 @@ void AllIFNeurons::serialize(ostream &output) const {
 ///  Writes out the data in the selected Neuron.
 ///
 ///  @param  output      stream to write out to.
-///  @param  i           index of the neuron (in neurons).
+///  @param  i           neuron index
 void AllIFNeurons::writeNeuron(ostream &output, int i) const {
    output << Cm_[i] << ends;
    output << Rm_[i] << ends;

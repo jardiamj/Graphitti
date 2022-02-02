@@ -8,7 +8,7 @@
  * The class uses a data-centric structure, which utilizes a structure as the containers of
  * all vertices.
  *
- * The container holds vertex parameters of all vertices.
+ * The container holds parameters of all vertices.
  * Each kind of vertex parameter is stored in a 1D array, of which length
  * is number of all vertices. Each array of a vertex parameter is pointed by a
  * corresponding member variable of the vertex parameter in the class.
@@ -42,10 +42,10 @@ public:
    virtual ~AllVertices();
 
    ///  Setup the internal structure of the class.
-   ///  Allocate memories to store all neurons' state.
+   ///  Allocate memories to store all vertices' state.
    virtual void setupVertices();
 
-   ///  Prints out all parameters of the neurons to logging file.
+   ///  Prints out all parameters of the vertices to logging file.
    ///  Registered to OperationManager as Operation::printParameters
    virtual void printParameters() const;
 
@@ -60,12 +60,12 @@ public:
 
    ///  Outputs state of the vertex chosen as a string.
    ///
-   ///  @param  i   index of the vertex (in vertices) to output info from.
+   ///  @param  i   vertex index to output info from.
    ///  @return the complete state of the vertex.
    virtual string toString(const int i) const = 0;
 
    ///  The summation point for each vertex.
-   ///  Summation points are places where the synapses connected to the vertex
+   ///  Summation points are places where the edges connected to the vertex
    ///  apply (summed up) their PSRs (Post-Synaptic-Response).
    ///  On the next advance cycle, vertices add the values stored in their corresponding
    ///  summation points to their Vm and resets the summation points to zero
@@ -77,7 +77,7 @@ protected:
 
    // Loggers used to print to using log4cplus logging macros
    log4cplus::Logger fileLogger_; // Logs to Output/Debug/logging.txt
-   log4cplus::Logger vertexLogger_; // Logs to Output/Debug/neurons.txt
+   log4cplus::Logger vertexLogger_; // Logs to Output/Debug/vertices.txt
 
 #if defined(USE_GPU)
    public:
@@ -103,7 +103,7 @@ protected:
        virtual void copyNeuronDeviceToHost(void* allVerticesDevice) = 0;
 
        ///  Update the state of all vertices for a time step
-       ///  Notify outgoing synapses if vertex has fired.
+       ///  Notify outgoing edges if vertex has fired.
        ///
        ///  @param  edges               Reference to the allEdges struct on host memory.
        ///  @param  allVerticesDevice       GPU address of the allVertices struct on device memory.
@@ -119,9 +119,9 @@ protected:
 #else // !defined(USE_GPU)
 public:
    ///  Update internal state of the indexed Neuron (called by every simulation step).
-   ///  Notify outgoing synapses if vertex has fired.
+   ///  Notify outgoing edges if vertex has fired.
    ///
-   ///  @param  edges         The Synapse list to search from.
+   ///  @param  edges         The Edge list to search from.
    ///  @param  edgeIndexMap  Reference to the EdgeIndexMap.
    virtual void advanceVertices(AllEdges &edges, const EdgeIndexMap *edgeIndexMap) = 0;
 
@@ -132,7 +132,7 @@ public:
 struct AllVerticesDeviceProperties
 {
         ///  The summation point for each vertex.
-        ///  Summation points are places where the synapses connected to the vertex 
+        ///  Summation points are places where the edges connected to the vertex 
         ///  apply (summed up) their PSRs (Post-Synaptic-Response). 
         ///  On the next advance cycle, vertices add the values stored in their corresponding 
         ///  summation points to their Vm and resets the summation points to zero

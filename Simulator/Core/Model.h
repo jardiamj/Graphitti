@@ -67,7 +67,7 @@ public:
    /// If, during an advance cycle, a vertex \f$A\f$ at coordinates \f$x,y\f$ fires, every edge
    /// which receives output is notified of the spike. Those edges then hold
    /// the spike until their delay period is completed.  At a later advance cycle, once the delay
-   /// period has been completed, the synapses apply their PSRs (Post-Synaptic-Response) to
+   /// period has been completed, the edges apply their PSRs (Post-Synaptic-Response) to
    /// the summation points.
    /// Finally, on the next advance cycle, each vertex \f$B\f$ adds the value stored
    /// in their corresponding summation points to their \f$V_m\f$ and resets the summation points to zero.

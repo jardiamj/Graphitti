@@ -78,7 +78,7 @@ SInputPoisson::SInputPoisson(TiXmlElement* parms) :
                     TiXmlDocument simDoc( maskNListFileName.c_str( ) );
                     if (!simDoc.LoadFile( ))
                     {
-                        cerr << "Failed loading positions of stimulus input mask neurons list file " << maskNListFileName << ":" << "\n\t"
+                        cerr << "Failed loading positions of stimulus input mask vertices list file " << maskNListFileName << ":" << "\n\t"
                              << simDoc.ErrorDesc( ) << endl;
                         cerr << " error: " << simDoc.ErrorRow( ) << ", " << simDoc.ErrorCol( ) << endl;
                         break;
@@ -86,7 +86,7 @@ SInputPoisson::SInputPoisson(TiXmlElement* parms) :
                     TiXmlNode* temp2 = nullptr;
                     if (( temp2 = simDoc.FirstChildElement( "M" ) ) == nullptr)
                     {
-                        cerr << "Could not find <M> in positons of stimulus input mask neurons list file " << maskNListFileName << endl;
+                        cerr << "Could not find <M> in positons of stimulus input mask vertices list file " << maskNListFileName << endl;
                         break;
                     }
                     getValueList(temp2->ToElement()->GetText(), &maskIndex);
@@ -119,8 +119,8 @@ void SInputPoisson::init()
     if (fSInput == false)
         return;
 
-    // create an input synapse layer
-    // TODO: do we need to support other types of synapses?
+    // create an input edge layer
+    // TODO: do we need to support other types of edges?
     edges_ = new AllDSSynapses(Simulator::getInstance().getTotalVertices(), 1);
     for (int neuronIndex = 0; neuronIndex < Simulator::getInstance().getTotalVertices(); neuronIndex++)
     {
@@ -147,7 +147,7 @@ void SInputPoisson::term()
     if (nISIs != nullptr)
         delete[] nISIs;
 
-    // clear the synapse layer, which destroy all synase objects
+    // clear the edge layer, which destroy all synase objects
     if (edges_ != nullptr)
         delete edges_;
 

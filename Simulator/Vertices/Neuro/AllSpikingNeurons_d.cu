@@ -39,7 +39,7 @@ void AllSpikingNeurons::copyDeviceSpikeCountsToHost( AllSpikingNeuronsDeviceProp
         HANDLE_ERROR( cudaMemcpy ( spikeCountOffset_, allVerticesDevice.spikeCountOffset_, numVertices * sizeof( int ), cudaMemcpyDeviceToHost ) );
 }
 
-///  Clear the spike counts out of all neurons in device memory.
+///  Clear the spike counts out of all vertices in device memory.
 ///  (helper function of clearNeuronSpikeCounts)
 ///
 ///  @param  allVerticesDevice   GPU address of the AllSpikingNeuronsDeviceProperties struct 
@@ -59,9 +59,9 @@ void AllSpikingNeurons::clearDeviceSpikeCounts( AllSpikingNeuronsDevicePropertie
 ///  function. We use this scheme because we cannot not use virtual function (Polymorphism)
 ///  in device functions.
 ///
-///  @param  synapses               Reference to the allEdges struct on host memory.
-void AllSpikingNeurons::setAdvanceVerticesDeviceParams(AllEdges &synapses)
+///  @param  edges               Reference to the allEdges struct on host memory.
+void AllSpikingNeurons::setAdvanceVerticesDeviceParams(AllEdges &edges)
 {
-    AllSpikingSynapses &spSynapses = dynamic_cast<AllSpikingSynapses&>(synapses);
+    AllSpikingSynapses &spSynapses = dynamic_cast<AllSpikingSynapses&>(edges);
     fAllowBackPropagation_ = spSynapses.allowBackPropagation();
 }

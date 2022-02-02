@@ -73,7 +73,7 @@ void XmlRecorder::term() {
 
 /// Compile history information in every epoch
 ///
-/// @param[in] neurons    The entire list of neurons.
+/// @param[in] vertices    The entire list of vertices.
 void XmlRecorder::compileHistories(AllVertices &vertices) {
    AllSpikingNeurons &spNeurons = dynamic_cast<AllSpikingNeurons &>(vertices);
    Simulator& simulator = Simulator::getInstance();
@@ -110,7 +110,7 @@ void XmlRecorder::compileHistories(AllVertices &vertices) {
 
 /// Writes simulation results to an output destination.
 ///
-/// @param  neurons the Neuron list to search from.
+/// @param  vertices the Neuron list to search from.
 void XmlRecorder::saveSimData(const AllVertices &vertices) {
    Simulator& simulator = Simulator::getInstance();
    // create Neuron Types matrix
@@ -119,7 +119,7 @@ void XmlRecorder::saveSimData(const AllVertices &vertices) {
       neuronTypes[i] = simulator.getModel()->getLayout()->vertexTypeMap_[i];
    }
    
-   // create neuron threshold matrix
+   // create vertex threshold matrix
    VectorMatrix neuronThresh(MATRIX_TYPE, MATRIX_INIT, 1, simulator.getTotalVertices(), 0);
    for (int i = 0; i < simulator.getTotalVertices(); i++) {
       neuronThresh[i] = dynamic_cast<const AllIFNeurons &>(vertices).Vthresh_[i];
@@ -139,7 +139,7 @@ void XmlRecorder::saveSimData(const AllVertices &vertices) {
    resultOut_ << "   " << layout->yloc_->toXML("yloc") << endl;
    resultOut_ << "   " << neuronTypes.toXML("neuronTypes") << endl;
    
-   // create starter neurons matrix
+   // create starter vertices matrix
    int num_starter_neurons = static_cast<int>(layout->numEndogenouslyActiveNeurons_);
    if (num_starter_neurons > 0) {
       VectorMatrix starterNeurons(MATRIX_TYPE, MATRIX_INIT, 1, num_starter_neurons);
@@ -147,7 +147,7 @@ void XmlRecorder::saveSimData(const AllVertices &vertices) {
       resultOut_ << "   " << starterNeurons.toXML("starterNeurons") << endl;
    }
    
-   // Write neuron threshold
+   // Write vertex threshold
    resultOut_ << "   " << neuronThresh.toXML("neuronThresh") << endl;
    
    // write epoch duration
@@ -167,7 +167,7 @@ void XmlRecorder::saveSimData(const AllVertices &vertices) {
  *  Get starter Neuron matrix.
  *
  *  @param  matrix      Starter Neuron matrix.
- *  @param  starter_map Bool map to reference neuron matrix location from.
+ *  @param  starter_map Bool map to reference vertex matrix location from.
  */
 void XmlRecorder::getStarterNeuronMatrix(VectorMatrix &matrix, const bool *starterMap) {
    int cur = 0;

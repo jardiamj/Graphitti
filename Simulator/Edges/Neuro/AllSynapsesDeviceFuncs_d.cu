@@ -3,7 +3,7 @@
  * 
  * @ingroup Simulator/Edges
  *
- * @brief Device functions for synapse data
+ * @brief Device functions for edge data
  */
 
 #include <vector>
@@ -14,7 +14,7 @@
 #include "AllDynamicSTDPSynapses.h"
 
 
-// a device variable to store synapse class ID.
+// a device variable to store edge class ID.
 __device__ enumClassSynapses classSynapses_d = undefClassSynapses; 
 
 /******************************************
@@ -22,7 +22,7 @@ __device__ enumClassSynapses classSynapses_d = undefClassSynapses;
 ******************************************/
 ///@{
 
-/// Return 1 if originating neuron is excitatory, -1 otherwise.
+/// Return 1 if originating vertex is excitatory, -1 otherwise.
 ///
 /// @param[in] t  edgeType I to I, I to E, E to I, or E to E
 /// @return 1 or -1
@@ -47,11 +47,11 @@ __device__ int edgSign( edgeType t )
 ******************************************/
 ///@{
 
-///  Update PSR (post synapse response)
+///  Update PSR (post edge response)
 ///
 ///  @param  allEdgesDevice  GPU address of the AllSpikingSynapsesDeviceProperties struct
 ///                             on device memory.
-///  @param  iEdg               Index of the synapse to set.
+///  @param  iEdg               Index of the edge to set.
 ///  @param  simulationStep     The current simulation step.
 ///  @param  deltaT             Inner simulation step duration.
 __device__ void changeSpikingSynapsesPSRDevice(AllSpikingSynapsesDeviceProperties* allEdgesDevice, const BGSIZE iEdg, const uint64_t simulationStep, const BGFLOAT deltaT)
@@ -63,11 +63,11 @@ __device__ void changeSpikingSynapsesPSRDevice(AllSpikingSynapsesDevicePropertie
     psr += ( W / decay );    // calculate psr
 }
 
-///  Update PSR (post synapse response)
+///  Update PSR (post edge response)
 ///
 ///  @param  allEdgesDevice  GPU address of the AllDSSynapsesDeviceProperties struct
 ///                             on device memory.
-///  @param  iEdg               Index of the synapse to set.
+///  @param  iEdg               Index of the edge to set.
 ///  @param  simulationStep     The current simulation step.
 ///  @param  deltaT             Inner simulation step duration.
 __device__ void changeDSSynapsePSRDevice(AllDSSynapsesDeviceProperties* allEdgesDevice, const BGSIZE iEdg, const uint64_t simulationStep, const BGFLOAT deltaT)
@@ -84,7 +84,7 @@ __device__ void changeDSSynapsePSRDevice(AllDSSynapsesDeviceProperties* allEdges
     BGFLOAT &psr = allEdgesDevice->psr_[iEdg];
     BGFLOAT decay = allEdgesDevice->decay_[iEdg];
 
-    // adjust synapse parameters
+    // adjust edge parameters
     if (lastSpike != ULONG_MAX) {
             BGFLOAT isi = (simulationStep - lastSpike) * deltaT ;
             r = 1 + ( r * ( 1 - u ) - 1 ) * exp( -isi / D );
@@ -98,7 +98,7 @@ __device__ void changeDSSynapsePSRDevice(AllDSSynapsesDeviceProperties* allEdges
 ///
 ///  @param[in] allEdgesDevice     GPU address of AllSpikingSynapsesDeviceProperties structures 
 ///                                   on device memory.
-///  @param[in] iEdg                  Index of the Synapse to check.
+///  @param[in] iEdg                  Index of the Edge to check.
 ///
 ///  @return true if there is an input spike event.
 __device__ bool isSpikingSynapsesSpikeQueueDevice(AllSpikingSynapsesDeviceProperties* allEdgesDevice, BGSIZE iEdg)
@@ -117,12 +117,12 @@ __device__ bool isSpikingSynapsesSpikeQueueDevice(AllSpikingSynapsesDeviceProper
     return isFired;
 }
    
-///  Adjust synapse weight according to the Spike-timing-dependent synaptic modification
+///  Adjust edge weight according to the Spike-timing-dependent synaptic modification
 ///  induced by natural spike trains
 ///
 ///  @param  allEdgesDevice    GPU address of the AllSTDPSynapsesDeviceProperties structures 
 ///                               on device memory.
-///  @param  iEdg                 Index of the synapse to set.
+///  @param  iEdg                 Index of the edge to set.
 ///  @param  delta                Pre/post synaptic spike interval.
 ///  @param  epost                Params for the rule given in Froemke and Dan (2002).
 ///  @param  epre                 Params for the rule given in Froemke and Dan (2002).
@@ -153,7 +153,7 @@ __device__ void stdpLearningDevice(AllSTDPSynapsesDeviceProperties* allEdgesDevi
     // dw is the percentage change in synaptic strength; add 1.0 to become the scaling ratio
     dw = 1.0 + dw * epre * epost;
 
-    // if scaling ratio is less than zero, set it to zero so this synapse, its strength is always zero
+    // if scaling ratio is less than zero, set it to zero so this edge, its strength is always zero
     if (dw < 0) {
         dw = 0;
     }
@@ -181,7 +181,7 @@ __device__ void stdpLearningDevice(AllSTDPSynapsesDeviceProperties* allEdgesDevi
 ///
 ///  @param[in] allEdgesDevice     GPU adress of AllSTDPSynapsesDeviceProperties structures 
 ///                                   on device memory.
-///  @param[in] iEdg                  Index of the Synapse to check.
+///  @param[in] iEdg                  Index of the Edge to check.
 ///
 ///  @return true if there is an input spike event.
 __device__ bool isSTDPSynapseSpikeQueuePostDevice(AllSTDPSynapsesDeviceProperties* allEdgesDevice, BGSIZE iEdg)
@@ -203,10 +203,10 @@ __device__ bool isSTDPSynapseSpikeQueuePostDevice(AllSTDPSynapsesDevicePropertie
 ///  Gets the spike history of the neuron.
 ///
 ///  @param  allVerticesDevice       GPU address of the allNeurons struct on device memory. 
-///  @param  index                  Index of the neuron to get spike history.
+///  @param  index                  neuron index to get spike history.
 ///  @param  offIndex               Offset of the history beffer to get.
 ///                                 -1 will return the last spike.
-///  @param  maxSpikes              Maximum number of spikes per neuron per epoch.
+///  @param  maxSpikes              Maximum number of spikes per vertex per epoch.
 ///
 ///  @return Spike history.
 __device__ uint64_t getSTDPSynapseSpikeHistoryDevice(AllSpikingNeuronsDeviceProperties* allVerticesDevice, int index, int offIndex, int maxSpikes)
@@ -222,10 +222,10 @@ __device__ uint64_t getSTDPSynapseSpikeHistoryDevice(AllSpikingNeuronsDeviceProp
 ******************************************/
 ///@{
 
-///  CUDA code for advancing spiking synapses.
-///  Perform updating synapses for one time step.
+///  CUDA code for advancing spiking edges.
+///  Perform updating edges for one time step.
 ///
-///  @param[in] totalSynapseCount  Number of synapses.
+///  @param[in] totalSynapseCount  Number of edges.
 ///  @param  edgeIndexMapDevice    GPU address of the EdgeIndexMap on device memory.
 ///  @param[in] simulationStep        The current simulation step.
 ///  @param[in] deltaT                Inner simulation step duration.
@@ -262,17 +262,17 @@ __global__ void advanceSpikingSynapsesDevice ( int totalSynapseCount, EdgeIndexM
         psr *= decay;
 }
 
-///  CUDA code for advancing STDP synapses.
-///  Perform updating synapses for one time step.
+///  CUDA code for advancing STDP edges.
+///  Perform updating edges for one time step.
 ///
-///  @param[in] totalSynapseCount        Number of synapses.
+///  @param[in] totalSynapseCount        Number of edges.
 ///  @param[in] edgeIndexMapDevice    GPU address of the EdgeIndexMap on device memory.
 ///  @param[in] simulationStep           The current simulation step.
 ///  @param[in] deltaT                   Inner simulation step duration.
 ///  @param[in] allEdgesDevice        GPU address of AllSTDPSynapsesDeviceProperties structures 
 ///                                      on device memory.
 ///  @param[in] allVerticesDevice         GPU address of AllVertices structures on device memory.
-///  @param[in] maxSpikes                Maximum number of spikes per neuron per epoch.               
+///  @param[in] maxSpikes                Maximum number of spikes per vertex per epoch.               
 __global__ void advanceSTDPSynapsesDevice ( int totalSynapseCount, EdgeIndexMap* edgeIndexMapDevice, uint64_t simulationStep, const BGFLOAT deltaT, AllSTDPSynapsesDeviceProperties* allEdgesDevice, AllSpikingNeuronsDeviceProperties* allVerticesDevice, int maxSpikes ) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if ( idx >= totalSynapseCount )
@@ -280,7 +280,7 @@ __global__ void advanceSTDPSynapsesDevice ( int totalSynapseCount, EdgeIndexMap*
 
     BGSIZE iEdg = edgeIndexMapDevice->incomingEdgeIndexMap_[idx];
 
-    // If the synapse is inhibitory or its weight is zero, update synapse state using AllSpikingSynapses::advanceEdge method
+    // If the edge is inhibitory or its weight is zero, update edge state using AllSpikingSynapses::advanceEdge method
     BGFLOAT &W = allEdgesDevice->W_[iEdg];
     if(W <= 0.0) {
         BGFLOAT &psr = allEdgesDevice->psr_[iEdg];
@@ -324,7 +324,7 @@ __global__ void advanceSTDPSynapsesDevice ( int totalSynapseCount, EdgeIndexMap*
         int &totalDelay = allEdgesDevice->totalDelay_[iEdg];
         bool &useFroemkeDanSTDP = allEdgesDevice->useFroemkeDanSTDP_[iEdg];
 
-        // pre and post neurons index
+        // pre and post vertices index
         int idxPre = allEdgesDevice->sourceVertexIndex_[iEdg];
         int idxPost = allEdgesDevice->destVertexIndex_[iEdg];
         int64_t spikeHistory, spikeHistory2;
@@ -438,17 +438,17 @@ __global__ void advanceSTDPSynapsesDevice ( int totalSynapseCount, EdgeIndexMap*
 ******************************************/
 ///@{
 
-///  Create a Spiking Synapse and connect it to the model.
+///  Create a Spiking Edge and connect it to the model.
 ///
 ///  @param allEdgesDevice    GPU address of the AllSpikingSynapsesDeviceProperties structures 
 ///                              on device memory.
-///  @param neuronIndex          Index of the source neuron.
-///  @param synapseOffset        Offset (into neuronIndex's) of the Synapse to create.
+///  @param neuronIndex          Index of the source vertex.
+///  @param synapseOffset        Offset (into neuronIndex's) of the Edge to create.
 ///  @param srcVertex            Coordinates of the source Neuron.
 ///  @param destVertex           Coordinates of the destination Neuron.
 ///  @param sumPoint             Pointer to the summation point.
 ///  @param deltaT               The time step size.
-///  @param type                 Type of the Synapse to create.
+///  @param type                 Type of the Edge to create.
 __device__ void createSpikingSynapse(AllSpikingSynapsesDeviceProperties* allEdgesDevice, const int neuronIndex, const int synapseOffset, int sourceIndex, int destIndex, BGFLOAT *sumPoint, const BGFLOAT deltaT, edgeType type)
 {
     BGFLOAT delay;
@@ -499,17 +499,17 @@ __device__ void createSpikingSynapse(AllSpikingSynapsesDeviceProperties* allEdge
     assert( size <= BYTES_OF_DELAYQUEUE );
 }
 
-///  Create a DS Synapse and connect it to the model.
+///  Create a DS Edge and connect it to the model.
 ///
 ///  @param allEdgesDevice    GPU address of the AllDSSynapsesDeviceProperties structures 
 ///                              on device memory.
-///  @param neuronIndex          Index of the source neuron.
-///  @param synapseOffset        Offset (into neuronIndex's) of the Synapse to create.
+///  @param neuronIndex          Index of the source vertex.
+///  @param synapseOffset        Offset (into neuronIndex's) of the Edge to create.
 ///  @param srcVertex            Coordinates of the source Neuron.
 ///  @param destVertex           Coordinates of the destination Neuron.
 ///  @param sumPoint             Pointer to the summation point.
 ///  @param deltaT               The time step size.
-///  @param type                 Type of the Synapse to create.
+///  @param type                 Type of the Edge to create.
 __device__ void createDSSynapse(AllDSSynapsesDeviceProperties* allEdgesDevice, const int neuronIndex, const int synapseOffset, int sourceIndex, int destIndex, BGFLOAT *sumPoint, const BGFLOAT deltaT, edgeType type)
 {
     BGFLOAT delay;
@@ -583,17 +583,17 @@ __device__ void createDSSynapse(AllDSSynapsesDeviceProperties* allEdgesDevice, c
     assert( size <= BYTES_OF_DELAYQUEUE );
 }
 
-///  Create a Synapse and connect it to the model.
+///  Create a Edge and connect it to the model.
 ///
 ///  @param allEdgesDevice    GPU address of the AllSTDPSynapsesDeviceProperties structures 
 ///                              on device memory.
-///  @param neuronIndex          Index of the source neuron.
-///  @param synapseOffset        Offset (into neuronIndex's) of the Synapse to create.
+///  @param neuronIndex          Index of the source vertex.
+///  @param synapseOffset        Offset (into neuronIndex's) of the Edge to create.
 ///  @param srcVertex            Coordinates of the source Neuron.
 ///  @param destVertex           Coordinates of the destination Neuron.
 ///  @param sumPoint             Pointer to the summation point.
 ///  @param deltaT               The time step size.
-///  @param type                 Type of the Synapse to create.
+///  @param type                 Type of the Edge to create.
 __device__ void createSTDPSynapse(AllSTDPSynapsesDeviceProperties* allEdgesDevice, const int neuronIndex, const int synapseOffset, int sourceIndex, int destIndex, BGFLOAT *sumPoint, const BGFLOAT deltaT, edgeType type)
 {
     BGFLOAT delay;
@@ -665,17 +665,17 @@ __device__ void createSTDPSynapse(AllSTDPSynapsesDeviceProperties* allEdgesDevic
     allEdgesDevice->useFroemkeDanSTDP_[iEdg] = false;
 }
 
-///  Create a Synapse and connect it to the model.
+///  Create a Edge and connect it to the model.
 ///
 ///  @param allEdgesDevice    GPU address of the AllDynamicSTDPSynapsesDeviceProperties structures 
 ///                              on device memory.
-///  @param neuronIndex          Index of the source neuron.
-///  @param synapseOffset        Offset (into neuronIndex's) of the Synapse to create.
+///  @param neuronIndex          Index of the source vertex.
+///  @param synapseOffset        Offset (into neuronIndex's) of the Edge to create.
 ///  @param srcVertex            Coordinates of the source Neuron.
 ///  @param destVertex           Coordinates of the destination Neuron.
 ///  @param sumPoint             Pointer to the summation point.
 ///  @param deltaT               The time step size.
-///  @param type                 Type of the Synapse to create.
+///  @param type                 Type of the Edge to create.
 __device__ void createDynamicSTDPSynapse(AllDynamicSTDPSynapsesDeviceProperties* allEdgesDevice, const int neuronIndex, const int synapseOffset, int sourceIndex, int destIndex, BGFLOAT *sumPoint, const BGFLOAT deltaT, edgeType type)
 {
     BGFLOAT delay;
@@ -770,18 +770,18 @@ __device__ void createDynamicSTDPSynapse(AllDynamicSTDPSynapsesDeviceProperties*
     allEdgesDevice->useFroemkeDanSTDP_[iEdg] = false;
 }
 
-/// Adds a synapse to the network.  Requires the locations of the source and
-/// destination neurons.
+/// Adds a edge to the network.  Requires the locations of the source and
+/// destination vertices.
 ///
 /// @param allEdgesDevice      Pointer to the AllSpikingSynapsesDeviceProperties structures 
 ///                               on device memory.
-/// @param type                   Type of the Synapse to create.
+/// @param type                   Type of the Edge to create.
 /// @param srcVertex            Coordinates of the source Neuron.
 /// @param destVertex           Coordinates of the destination Neuron.
 ///
 /// @param sumPoint              Pointer to the summation point.
 /// @param deltaT                 The time step size.
-/// @param W_d                    Array of synapse weight.
+/// @param W_d                    Array of edge weight.
 /// @param numVertices            The number of vertices.
 __device__ void addSpikingSynapse(AllSpikingSynapsesDeviceProperties* allEdgesDevice, edgeType type, const int srcVertex, const int destVertex, int sourceIndex, int destIndex, BGFLOAT *sumPoint, const BGFLOAT deltaT, BGFLOAT* W_d, int numVertices)
 {
@@ -790,44 +790,44 @@ __device__ void addSpikingSynapse(AllSpikingSynapsesDeviceProperties* allEdgesDe
     }
 
     // add it to the list
-    BGSIZE synapseIndex;
+    BGSIZE edgeIndex;
     BGSIZE maxEdges = allEdgesDevice->maxEdgesPerVertex_;
     BGSIZE synapseBegin = maxEdges * destVertex;
-    for (synapseIndex = 0; synapseIndex < maxEdges; synapseIndex++) {
-        if (!allEdgesDevice->inUse_[synapseBegin + synapseIndex]) {
+    for (edgeIndex = 0; edgeIndex < maxEdges; edgeIndex++) {
+        if (!allEdgesDevice->inUse_[synapseBegin + edgeIndex]) {
             break;
         }
     }
 
     allEdgesDevice->edgeCounts_[destVertex]++;
 
-    // create a synapse
+    // create a edge
     switch (classSynapses_d) {
     case classAllSpikingSynapses:
-        createSpikingSynapse(allEdgesDevice, destVertex, synapseIndex, sourceIndex, destIndex, sumPoint, deltaT, type );
+        createSpikingSynapse(allEdgesDevice, destVertex, edgeIndex, sourceIndex, destIndex, sumPoint, deltaT, type );
         break;
     case classAllDSSynapses:
-        createDSSynapse(static_cast<AllDSSynapsesDeviceProperties *>(allEdgesDevice), destVertex, synapseIndex, sourceIndex, destIndex, sumPoint, deltaT, type );
+        createDSSynapse(static_cast<AllDSSynapsesDeviceProperties *>(allEdgesDevice), destVertex, edgeIndex, sourceIndex, destIndex, sumPoint, deltaT, type );
         break;
     case classAllSTDPSynapses:
-        createSTDPSynapse(static_cast<AllSTDPSynapsesDeviceProperties *>(allEdgesDevice), destVertex, synapseIndex, sourceIndex, destIndex, sumPoint, deltaT, type );
+        createSTDPSynapse(static_cast<AllSTDPSynapsesDeviceProperties *>(allEdgesDevice), destVertex, edgeIndex, sourceIndex, destIndex, sumPoint, deltaT, type );
         break;
     case classAllDynamicSTDPSynapses:
-        createDynamicSTDPSynapse(static_cast<AllDynamicSTDPSynapsesDeviceProperties *>(allEdgesDevice), destVertex, synapseIndex, sourceIndex, destIndex, sumPoint, deltaT, type );
+        createDynamicSTDPSynapse(static_cast<AllDynamicSTDPSynapsesDeviceProperties *>(allEdgesDevice), destVertex, edgeIndex, sourceIndex, destIndex, sumPoint, deltaT, type );
         break;
     default:
         assert(false);
     }
-    allEdgesDevice->W_[synapseBegin + synapseIndex] = W_d[srcVertex * numVertices + destVertex] * edgSign(type) * AllNeuroEdges::SYNAPSE_STRENGTH_ADJUSTMENT;
+    allEdgesDevice->W_[synapseBegin + edgeIndex] = W_d[srcVertex * numVertices + destVertex] * edgSign(type) * AllNeuroEdges::SYNAPSE_STRENGTH_ADJUSTMENT;
 }
 
-/// Remove a synapse from the network.
+/// Remove a edge from the network.
 ///
 /// @param[in] allEdgesDevice      Pointer to the AllSpikingSynapsesDeviceProperties structures 
 ///                                   on device memory.
-/// @param neuronIndex               Index of a neuron.
-/// @param synapseOffset             Offset into neuronIndex's synapses.
-/// @param[in] maxEdges            Maximum number of synapses per neuron.
+/// @param neuronIndex               Index of a vertex.
+/// @param synapseOffset             Offset into neuronIndex's edges.
+/// @param[in] maxEdges            Maximum number of edges per vertex.
 __device__ void eraseSpikingSynapse( AllSpikingSynapsesDeviceProperties* allEdgesDevice, const int neuronIndex, const int synapseOffset, int maxEdges )
 {
     BGSIZE iSync = maxEdges * neuronIndex + synapseOffset;
@@ -836,11 +836,11 @@ __device__ void eraseSpikingSynapse( AllSpikingSynapsesDeviceProperties* allEdge
     allEdgesDevice->W_[iSync] = 0;
 }
 
-/// Returns the type of synapse at the given coordinates
+/// Returns the type of edge at the given coordinates
 ///
 /// @param[in] allVerticesDevice          Pointer to the Neuron structures in device memory.
-/// @param srcVertex             Index of the source neuron.
-/// @param destVertex            Index of the destination neuron.
+/// @param srcVertex             Index of the source vertex.
+/// @param destVertex            Index of the destination vertex.
 __device__ edgeType edgType( vertexType* neuronTypeMap_d, const int srcVertex, const int destVertex )
 {
     if ( neuronTypeMap_d[srcVertex] == INH && neuronTypeMap_d[destVertex] == INH )
@@ -862,15 +862,15 @@ __device__ edgeType edgType( vertexType* neuronTypeMap_d, const int srcVertex, c
 ******************************************/
 ///@{
 
-/// Adjust the strength of the synapse or remove it from the synapse map if it has gone below
+/// Adjust the strength of the edge or remove it from the edge map if it has gone below
 /// zero.
 ///
 /// @param[in] numVertices        Number of vertices.
 /// @param[in] deltaT             The time step size.
-/// @param[in] W_d                Array of synapse weight.
-/// @param[in] maxEdges        Maximum number of synapses per neuron.
+/// @param[in] W_d                Array of edge weight.
+/// @param[in] maxEdges        Maximum number of edges per vertex.
 /// @param[in] allVerticesDevice   Pointer to the Neuron structures in device memory.
-/// @param[in] allEdgesDevice  Pointer to the Synapse structures in device memory.
+/// @param[in] allEdgesDevice  Pointer to the Edge structures in device memory.
 __global__ void updateSynapsesWeightsDevice( int numVertices, BGFLOAT deltaT, BGFLOAT* W_d, int maxEdges, AllSpikingNeuronsDeviceProperties* allVerticesDevice, AllSpikingSynapsesDeviceProperties* allEdgesDevice, vertexType* neuronTypeMap_d )
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -883,32 +883,32 @@ __global__ void updateSynapsesWeightsDevice( int numVertices, BGFLOAT deltaT, BG
     int added = 0;
 
     // Scale and add sign to the areas
-    // visit each neuron 'a'
+    // visit each vertex 'a'
     int destVertex = idx;
 
-    // and each destination neuron 'b'
+    // and each destination vertex 'b'
     for (int srcVertex = 0; srcVertex < numVertices; srcVertex++) {
-        // visit each synapse at (xa,ya)
+        // visit each edge at (xa,ya)
         bool connected = false;
         edgeType type = edgType(neuronTypeMap_d, srcVertex, destVertex);
 
-        // for each existing synapse
+        // for each existing edge
         BGSIZE existing_synapses = allEdgesDevice->edgeCounts_[destVertex];
         int existingSynapsesChecked = 0;
-        for (BGSIZE synapseIndex = 0; (existingSynapsesChecked < existing_synapses) && !connected; synapseIndex++) {
-            BGSIZE iEdg = maxEdges * destVertex + synapseIndex;
+        for (BGSIZE edgeIndex = 0; (existingSynapsesChecked < existing_synapses) && !connected; edgeIndex++) {
+            BGSIZE iEdg = maxEdges * destVertex + edgeIndex;
             if (allEdgesDevice->inUse_[iEdg] == true) {
-                // if there is a synapse between a and b
+                // if there is a edge between a and b
                 if (allEdgesDevice->sourceVertexIndex_[iEdg] == srcVertex) {
                     connected = true;
                     adjusted++;
 
-                    // adjust the strength of the synapse or remove
-                    // it from the synapse map if it has gone below
+                    // adjust the strength of the edge or remove
+                    // it from the edge map if it has gone below
                     // zero.
                     if (W_d[srcVertex * numVertices + destVertex] <= 0) {
                         removed++;
-                        eraseSpikingSynapse(allEdgesDevice, destVertex, synapseIndex, maxEdges);
+                        eraseSpikingSynapse(allEdgesDevice, destVertex, edgeIndex, maxEdges);
                     } else {
                         // adjust
                         // g_synapseStrengthAdjustmentConstant is 1.0e-8;
@@ -920,7 +920,7 @@ __global__ void updateSynapsesWeightsDevice( int numVertices, BGFLOAT deltaT, BG
             }
         }
 
-        // if not connected and weight(a,b) > 0, add a new synapse from a to b
+        // if not connected and weight(a,b) > 0, add a new edge from a to b
         if (!connected && (W_d[srcVertex * numVertices +  destVertex] > 0)) {
             // locate summation point
             BGFLOAT* sumPoint = &( allVerticesDevice->summationMap_[destVertex] );
@@ -932,20 +932,20 @@ __global__ void updateSynapsesWeightsDevice( int numVertices, BGFLOAT deltaT, BG
 }
 
 
-/// Adds a synapse to the network.  Requires the locations of the source and
-/// destination neurons.
+/// Adds a edge to the network.  Requires the locations of the source and
+/// destination vertices.
 ///
-/// @param allEdgesDevice      Pointer to the Synapse structures in device memory.
+/// @param allEdgesDevice      Pointer to the Edge structures in device memory.
 /// @param pSummationMap          Pointer to the summation point.
 /// @param deltaT                 The simulation time step size.
-/// @param weight                 Synapse weight.
+/// @param weight                 Edge weight.
 __global__ void initSynapsesDevice( int n, AllDSSynapsesDeviceProperties* allEdgesDevice, BGFLOAT *pSummationMap, const BGFLOAT deltaT, BGFLOAT weight )
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if ( idx >= n )
         return;
 
-    // create a synapse
+    // create a edge
     int neuronIndex = idx;
     BGFLOAT* sumPoint = &( pSummationMap[neuronIndex] );
     edgeType type = allEdgesDevice->type_[neuronIndex];

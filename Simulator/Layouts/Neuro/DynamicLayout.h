@@ -3,12 +3,12 @@
  * 
  * @ingroup Simulator/Layouts
  *
- * @brief The DynamicLayout class defines the layout of neurons in neural networks
+ * @brief The DynamicLayout class defines the layout of vertices in neural networks
  *
- * The DynamicLayout class maintains neurons locations (x, y coordinates), 
- * distance of every couple neurons,
- * neurons type map (distribution of excitatory and inhibitory neurons), and starter neurons map
- * (distribution of endogenously active neurons).  
+ * The DynamicLayout class maintains vertices locations (x, y coordinates), 
+ * distance of every couple vertices,
+ * vertices type map (distribution of excitatory and inhibitory vertices), and starter vertices map
+ * (distribution of endogenously active vertices).  
  *
  * The DynamicLayout class generates layout information dynamically.
  */
@@ -31,14 +31,14 @@ public:
    ///  Registered to OperationManager as Operation::printParameters
    virtual void printParameters() const override;
 
-   ///  Creates a randomly ordered distribution with the specified numbers of neuron types.
+   ///  Creates a randomly ordered distribution with the specified numbers of vertex types.
    ///
-   ///  @param  numVertices number of the neurons to have in the type map.
+   ///  @param  numVertices number of the vertices to have in the type map.
    virtual void generateVertexTypeMap(int numVertices) override;
 
    ///  Populates the starter map.
-   ///  Selects num_endogenously_active_neurons excitory neurons
-   ///  and converts them into starter neurons.
+   ///  Selects num_endogenously_active_neurons excitory vertices
+   ///  and converts them into starter vertices.
    ///
    ///  @param  numVertices number of vertices to have in the map.
    virtual void initStarterMap(const int numVertices) override;
@@ -46,17 +46,17 @@ public:
    /// Load member variables from configuration file. Registered to OperationManager as Operation::loadParameters
    virtual void loadParameters(); 
 
-   /// Returns the type of synapse at the given coordinates
-   /// @param    srcVertex  integer that points to a Neuron in the type map as a source.
-   /// @param    destVertex integer that points to a Neuron in the type map as a destination.
-   /// @return type of the synapse.
+   /// Returns the type of edge at the given coordinates
+   /// @param    srcVertex  source vertex index
+   /// @param    destVertex destination vertex index
+   /// @return type of the edge.
    virtual edgeType edgType(const int srcVertex, const int destVertex);
 
 private:
-   /// Fraction of endogenously active neurons.
+   /// Fraction of endogenously active vertices.
    BGFLOAT fractionEndogenouslyActive_;
 
-   /// Fraction of exitatory neurons.
+   /// Fraction of exitatory vertices.
    BGFLOAT fractionExcitatory_;
 };
 

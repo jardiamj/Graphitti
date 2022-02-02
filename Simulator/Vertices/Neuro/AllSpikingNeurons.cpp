@@ -70,9 +70,9 @@ void AllSpikingNeurons::clearSpikeCounts() {
 ///  Update internal state of the indexed Neuron (called by every simulation step).
 ///  Notify outgoing synapses if neuron has fired.
 ///
-///  @param  synapses         The Synapse list to search from.
+///  @param  edges         The synapse list to search from.
 ///  @param  edgeIndexMap  Reference to the EdgeIndexMap.
-void AllSpikingNeurons::advanceVertices(AllEdges &synapses, const EdgeIndexMap *edgeIndexMap) {
+void AllSpikingNeurons::advanceVertices(AllEdges &edges, const EdgeIndexMap *edgeIndexMap) {
    int maxSpikes = (int) ((Simulator::getInstance().getEpochDuration() * Simulator::getInstance().getMaxFiringRate()));
 
    AllSpikingSynapses &spSynapses = dynamic_cast<AllSpikingSynapses &>(synapses);
@@ -124,7 +124,7 @@ void AllSpikingNeurons::advanceVertices(AllEdges &synapses, const EdgeIndexMap *
 
 ///  Fire the selected Neuron and calculate the result.
 ///
-///  @param  index       Index of the Neuron to update.
+///  @param  index       neuron index to update.
 void AllSpikingNeurons::fire(const int index) const {
    // Note that the neuron has fired!
    hasFired_[index] = true;
@@ -146,7 +146,7 @@ void AllSpikingNeurons::fire(const int index) const {
 ///  cleared/dumped to file, and how the actual index (idxSp) computation works,
 ///  as it is very unobvious.
 ///
-///  @param  index            Index of the neuron to get spike history.
+///  @param  index            neuron index to get spike history.
 ///  @param  offIndex         Offset of the history buffer to get from.
 uint64_t AllSpikingNeurons::getSpikeHistory(int index, int offIndex) {
    // offIndex is a minus offset

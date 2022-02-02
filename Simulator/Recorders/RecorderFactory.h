@@ -38,7 +38,7 @@ private:
    /// Constructor is private to keep a singleton instance of this class.
    RecorderFactory();
 
-   /// Pointer to neurons instance
+   /// Pointer to vertices instance
    shared_ptr<IRecorder> recorderInstance;
 
    /// Defines function type for usage in internal map
@@ -53,6 +53,6 @@ private:
    /// Retrieves and invokes correct ::Create() function.
    IRecorder *invokeCreateFunction(const string &className);
 
-   /// Register neuron class and it's create function to the factory.
+   /// Register vertex class and it's create function to the factory.
    void registerClass(const string &className, CreateFunction function);
 };

@@ -19,7 +19,7 @@
  * Define \f$C\f$ as the avarage of \f$C_v\f$ over all \f$v\f$ (Watts etal. 1998).
  *
  * We first create a regular network characterised by two parameters: number of maximum 
- * connections per neurons and connection radius threshold, then rewire it according 
+ * connections per vertices and connection radius threshold, then rewire it according 
  * to the small-world rewiring probability.
  */
 
@@ -50,7 +50,7 @@ public:
    ///
    ///  @param  layout    Layout information of the neural network.
    ///  @param  vertices   The Neuron list to search from.
-   ///  @param  edges  The Synapse list to search from.
+   ///  @param  edges  The Edge list to search from.
    virtual void setupConnections(Layout *layout, AllVertices *vertices, AllEdges *edges) override;
 
    /// Load member variables from configuration file.
@@ -105,10 +105,10 @@ private:
    /// Small-world rewiring probability
    BGFLOAT rewiringProbability_;
 
-   /// Min/max values of excitatory neuron's synapse weight
+   /// Min/max values of excitatory neuron's edge weight
    BGFLOAT excWeight_[2];
 
-   /// Min/max values of inhibitory neuron's synapse weight
+   /// Min/max values of inhibitory neuron's edge weight
    BGFLOAT inhWeight_[2];
 
    struct DistDestVertex {

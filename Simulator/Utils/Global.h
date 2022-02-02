@@ -63,7 +63,7 @@ typedef unsigned long long int uint64_t;	//included in inttypes.h, which is not 
 
 using namespace std;
 
-// If defined, a table with time and each neuron voltage will output to stdout.
+// If defined, a table with time and each vertex voltage will output to stdout.
 //#define DUMP_VOLTAGES
 
 #if defined(USE_GPU)
@@ -88,8 +88,8 @@ const int g_nMaxChunkSize = 100;
 // NETWORK MODEL VARIABLES NMV-BEGIN {
 // Vertex types.
 // NEURO:
-//	INH - Inhibitory neuron 
-//	EXC - Excitory neuron
+//	INH - inhibitory neuron 
+//	EXC - Excitory vertex
 // NG911:
 // CALR: Caller radii
 // PSAP: PSAP nodes
@@ -108,10 +108,10 @@ enum vertexType {
 
 // Edge types.
 // NEURO:
-//	II - Synapse from inhibitory neuron to inhibitory neuron.
-//	IE - Synapse from inhibitory neuron to excitory neuron.
-//	EI - Synapse from excitory neuron to inhibitory neuron.
-//	EE - Synapse from excitory neuron to excitory neuron.
+//	II - Edge from inhibitory neuron to inhibitory neuron.
+//	IE - Edge from inhibitory neuron to excitory vertex.
+//	EI - Edge from excitory vertex to inhibitory neuron.
+//	EE - Edge from excitory vertex to excitory vertex.
 // NG911:
 //  CP - Caller to PSAP
 //  PR - PSAP to Responder
@@ -146,13 +146,13 @@ enum edgeType {
 #define DEFAULT_Inoise		(0.0)
 // The default injected current.
 #define DEFAULT_Iinject		(0.0)
-// The default threshold voltage.  If \f$V_m >= V_{thresh}\f$ then the neuron fires.
+// The default threshold voltage.  If \f$V_m >= V_{thresh}\f$ then the vertex fires.
 #define DEFAULT_Vthresh		(-0.04)
 // The default time step size.
 #define DEFAULT_dt		(1e-4) // MODEL INDEPENDENT
-// The default absolute refractory period for inhibitory neurons.
+// The default absolute refractory period for inhibitory vertices.
 #define DEFAULT_InhibTrefract	(2.0e-3)
-// The default absolute refractory period for excitory neurons.
+// The default absolute refractory period for excitory vertices.
 #define DEFAULT_ExcitTrefract	(3.0e-3)
 
 // The default synaptic time constant.

@@ -6,9 +6,9 @@
  * @brief A class that performs stimulus input (implementation Poisson on GPU).
  *
  * The GpuSInputPoisson performs providing stimulus input to the network for each time step.
- * In this version, a layer of synapses are added, which accept external spike trains.
- * Each synapse gets an indivisual spike train (Poisson distribution) characterized
- * by mean firing rate, and each synapse has individual weight value.
+ * In this version, a layer of edges are added, which accept external spike trains.
+ * Each edge gets an indivisual spike train (Poisson distribution) characterized
+ * by mean firing rate, and each edge has individual weight value.
  */
 
 #pragma once
@@ -43,10 +43,10 @@ private:
     //! Dellocate GPU device memory
     void deleteDeviceValues(Model* model);
 
-    //! Synapse structures in device memory.
+    //! Edge structures in device memory.
     AllDSSynapsesDeviceProperties* allEdgesDevice;
  
-    //! Pointer to synapse index map in device memory.
+    //! Pointer to edge index map in device memory.
     EdgeIndexMap* edgeIndexMapDevice;
 
     //! Pointer to device interval counter.

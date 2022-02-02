@@ -45,7 +45,7 @@ void AllNeuroEdges::resetEdge(const BGSIZE iEdg, const BGFLOAT deltaT) {
    psr_[iEdg] = 0.0;
 }
 
-///  Sets the data for Synapse to input's data.
+///  Sets the data for Edge to input's data.
 ///
 ///  @param  input  istream to read from.
 ///  @param  iEdg   Index of the edge to set.

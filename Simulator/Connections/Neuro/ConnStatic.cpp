@@ -48,7 +48,7 @@ ConnStatic::~ConnStatic() {
 ///
 ///  @param  layout    Layout information of the neural network.
 ///  @param  vertices   The Vertex list to search from.
-///  @param  edges  The Synapse list to search from.
+///  @param  edges  The Edge list to search from.
 void ConnStatic::setupConnections(Layout *layout, AllVertices *vertices, AllEdges *edges) {
    Simulator& simulator = Simulator::getInstance();
    int numVertices = simulator.getTotalVertices();
@@ -144,7 +144,7 @@ void ConnStatic::printParameters() const {
    LOG4CPLUS_DEBUG(fileLogger_, "CONNECTIONS PARAMETERS" << endl
                    << "\tConnections Type: ConnStatic" << endl
                    << "\tConnection radius threshold: " << threshConnsRadius_ << endl
-                   << "\tConnections per neuron: " << connsPerVertex_ << endl
+                   << "\tConnections per vertex: " << connsPerVertex_ << endl
                    << "\tRewiring probability: " << rewiringProbability_ << endl
                    << "\tExhitatory min weight: " << excWeight_[0] << endl
                    << "\tExhitatory max weight: " << excWeight_[1] << endl

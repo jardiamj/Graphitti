@@ -18,7 +18,7 @@
  *      what():  St9bad_alloc
  * CAUSE
  * As simulations expand in size the number of
- * neurons in total increases exponentially. When
+ * vertices in total increases exponentially. When
  * using a MATRIX_TYPE = “complete” the amount of
  * used memory increases by another order of magnitude.
  * Once enough memory is used no more memory can be
@@ -81,8 +81,8 @@ ConnGrowth::~ConnGrowth() {
 ///
 ///  @param  layout    Layout information of the neural network.
 ///  @param  vertices   The vertex list to search from.
-///  @param  synapses  The Synapse list to search from.
-void ConnGrowth::setupConnections(Layout *layout, AllVertices *vertices, AllEdges *synapses) {
+///  @param  edges  The Edge list to search from.
+void ConnGrowth::setupConnections(Layout *layout, AllVertices *vertices, AllEdges *edges) {
    int numVertices = Simulator::getInstance().getTotalVertices();
    radiiSize_ = numVertices;
 
@@ -185,7 +185,7 @@ void ConnGrowth::updateFrontiers(const int numVertices, Layout *layout) {
    }
 }
 
-///  Update the areas of overlap in between Neurons.
+///  Update the areas of overlap in between Vertices.
 ///
 ///  @param  numVertices  Number of vertices to update.
 ///  @param  layout      Layout information of the neural network.
@@ -236,8 +236,8 @@ void ConnGrowth::updateOverlap(BGFLOAT numVertices, Layout *layout) {
 
 #if !defined(USE_GPU)
 
-///  Update the weight of the Synapses in the simulation.
-///  To be clear, iterates through all source and destination neurons
+///  Update the weight of the Edges in the simulation.
+///  To be clear, iterates through all source and destination vertices
 ///  and updates their synaptic strengths from the weight matrix.
 ///  Note: Platform Dependent.
 ///
@@ -245,9 +245,9 @@ void ConnGrowth::updateOverlap(BGFLOAT numVertices, Layout *layout) {
 ///  @param  ivertices    the AllVertices object.
 ///  @param  iedges   the AllEdges object.
 ///  @param  layout      the Layout object.
-void ConnGrowth::updateSynapsesWeights(const int numVertices, AllVertices &vertices, AllEdges &iedges,
+void ConnGrowth::updateEdgesWeights(const int numVertices, AllVertices &vertices, AllEdges &iedges,
                                        Layout *layout) {
-   AllNeuroEdges &synapses = dynamic_cast<AllNeuroEdges &>(iedges);
+   AllNeuroEdges &edges = dynamic_cast<AllNeuroEdges &>(iedges);
 
    // For now, we just set the weights to equal the areas. We will later
    // scale it and set its sign (when we index and get its sign).
@@ -258,42 +258,42 @@ void ConnGrowth::updateSynapsesWeights(const int numVertices, AllVertices &verti
    int removed = 0;
    int added = 0;
 
-   LOG4CPLUS_INFO(fileLogger_, "Adjusting Synapse weights");
+   LOG4CPLUS_INFO(fileLogger_, "Adjusting Edge weights");
 
    // Scale and add sign to the areas
-   // visit each neuron 'a'
+   // visit each vertex 'a'
    for (int srcVertex = 0; srcVertex < numVertices; srcVertex++) {
-      // and each destination neuron 'b'
+      // and each destination vertex 'b'
       for (int destVertex = 0; destVertex < numVertices; destVertex++) {
-         // visit each synapse at (xa,ya)
+         // visit each edge at (xa,ya)
          bool connected = false;
          edgeType type = layout->edgType(srcVertex, destVertex);
 
-         // for each existing synapse
-         BGSIZE synapseCounts = synapses.edgeCounts_[destVertex];
+         // for each existing edge
+         BGSIZE synapseCounts = edges.edgeCounts_[destVertex];
          BGSIZE synapse_adjusted = 0;
          BGSIZE iEdg = Simulator::getInstance().getMaxEdgesPerVertex() * destVertex;
-         for (BGSIZE synapseIndex = 0; synapse_adjusted < synapseCounts; synapseIndex++, iEdg++) {
-            if (synapses.inUse_[iEdg] == true) {
-               // if there is a synapse between a and b
-               if (synapses.sourceVertexIndex_[iEdg] == srcVertex) {
+         for (BGSIZE edgeIndex = 0; synapse_adjusted < synapseCounts; edgeIndex++, iEdg++) {
+            if (edges.inUse_[iEdg] == true) {
+               // if there is a edge between a and b
+               if (edges.sourceVertexIndex_[iEdg] == srcVertex) {
                   connected = true;
                   adjusted++;
-                  // adjust the strength of the synapse or remove
-                  // it from the synapse map if it has gone below
+                  // adjust the strength of the edge or remove
+                  // it from the edge map if it has gone below
                   // zero.
                   if ((*W_)(srcVertex, destVertex) <= 0) {
                      removed++;
-                     synapses.eraseEdge(destVertex, iEdg);
+                     edges.eraseEdge(destVertex, iEdg);
                   } else {
                      // adjust
                      // SYNAPSE_STRENGTH_ADJUSTMENT is 1.0e-8;
-                     synapses.W_[iEdg] = (*W_)(srcVertex, destVertex) *
-                                         synapses.edgSign(type) * AllNeuroEdges::SYNAPSE_STRENGTH_ADJUSTMENT;
+                     edges.W_[iEdg] = (*W_)(srcVertex, destVertex) *
+                                         edges.edgSign(type) * AllNeuroEdges::SYNAPSE_STRENGTH_ADJUSTMENT;
 
                      LOG4CPLUS_DEBUG(fileLogger_, "Weight of rgSynapseMap" <<
-                                                                           "[" << synapseIndex << "]: " <<
-                                                                           synapses.W_[iEdg]);
+                                                                           "[" << edgeIndex << "]: " <<
+                                                                           edges.W_[iEdg]);
                   }
                }
                synapse_adjusted++;
@@ -301,7 +301,7 @@ void ConnGrowth::updateSynapsesWeights(const int numVertices, AllVertices &verti
             }
          }
 
-         // if not connected and weight(a,b) > 0, add a new synapse from a to b
+         // if not connected and weight(a,b) > 0, add a new edge from a to b
          if (!connected && ((*W_)(srcVertex, destVertex) > 0)) {
 
             // locate summation point
@@ -309,10 +309,10 @@ void ConnGrowth::updateSynapsesWeights(const int numVertices, AllVertices &verti
             added++;
 
             BGSIZE iEdg;
-            synapses.addEdge(iEdg, type, srcVertex, destVertex, sumPoint,
+            edges.addEdge(iEdg, type, srcVertex, destVertex, sumPoint,
                                 Simulator::getInstance().getDeltaT());
-            synapses.W_[iEdg] =
-                  (*W_)(srcVertex, destVertex) * synapses.edgSign(type) *
+            edges.W_[iEdg] =
+                  (*W_)(srcVertex, destVertex) * edges.edgSign(type) *
                   AllNeuroEdges::SYNAPSE_STRENGTH_ADJUSTMENT;
 
          }

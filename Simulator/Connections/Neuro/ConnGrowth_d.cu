@@ -3,7 +3,7 @@
  * 
  * @ingroup Simulator/Connections
  *
- * @brief Update the weights of the Synapses in the simulation.
+ * @brief Update the weights of the Edges in the simulation.
  */
 
 #include "ConnGrowth.h"
@@ -13,19 +13,19 @@
 #include "Book.h"
 
 /*
- *  Update the weights of the Synapses in the simulation. To be clear,
+ *  Update the weights of the Edges in the simulation. To be clear,
  *  iterates through all source and destination vertices and updates their
  *  edge strengths from the weight matrix.
  *  Note: Platform Dependent.
  *
  *  @param  numVertices         number of vertices to update.
  *  @param  vertices            The AllVertices object.
- *  @param  synapses           The AllEdges object.
+ *  @param  edges           The AllEdges object.
  *  @param  allVerticesDevice   GPU address to the AllVertices struct in device memory.
  *  @param  allEdgesDevice  GPU address to the allEdges struct in device memory.
  *  @param  layout             The Layout object.
  */
-void ConnGrowth::updateSynapsesWeights(const int numVertices, AllVertices &vertices, AllEdges &synapses, AllSpikingNeuronsDeviceProperties* allVerticesDevice, AllSpikingSynapsesDeviceProperties* allEdgesDevice, Layout *layout)
+void ConnGrowth::updateEdgesWeights(const int numVertices, AllVertices &vertices, AllEdges &edges, AllSpikingNeuronsDeviceProperties* allVerticesDevice, AllSpikingSynapsesDeviceProperties* allEdgesDevice, Layout *layout)
 {
         Simulator &simulator = Simulator::getInstance();
         // For now, we just set the weights to equal the areas. We will later
@@ -65,8 +65,8 @@ void ConnGrowth::updateSynapsesWeights(const int numVertices, AllVertices &verti
 
         HANDLE_ERROR( cudaFree( neuronTypeMapD ) );
 
-        // copy device synapse count to host memory
-        synapses.copyDeviceEdgeCountsToHost(allEdgesDevice);
-        // copy device synapse summation coordinate to host memory
-        synapses.copyDeviceEdgeSumIdxToHost(allEdgesDevice);
+        // copy device edge count to host memory
+        edges.copyDeviceEdgeCountsToHost(allEdgesDevice);
+        // copy device edge summation coordinate to host memory
+        edges.copyDeviceEdgeSumIdxToHost(allEdgesDevice);
 }

@@ -49,13 +49,13 @@ public:
    /// Get the zone of the vertex
    /// Only built for 10x10 grid
    /// See: https://docs.google.com/spreadsheets/d/1DqP8sjkfJ_pkxtETzuEdoVZbWOGu633EMQAeShe5k68/edit?usp=sharing
-   /// @param  index    the index of the vertex
+   /// @param  index    the vertex index
    int zone(int index);
 
-   /// Returns the type of synapse at the given coordinates
-   /// @param    srcVertex  integer that points to a Neuron in the type map as a source.
-   /// @param    destVertex integer that points to a Neuron in the type map as a destination.
-   /// @return type of the synapse.
+   /// Returns the type of edge at the given coordinates
+   /// @param    srcVertex  source vertex index
+   /// @param    destVertex destination vertex index
+   /// @return type of the edge.
    virtual edgeType edgType(const int srcVertex, const int destVertex) override;
 
 

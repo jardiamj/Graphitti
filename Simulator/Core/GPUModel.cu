@@ -23,7 +23,7 @@ __constant__ int d_debug_mask[1];
 
 GPUModel::GPUModel() :
   Model::Model(),
-  synapseIndexMapDevice_(nullptr),
+  edgeIndexMapDevice_(nullptr),
   randNoise_d(nullptr),
   allVerticesDevice_(nullptr),
   allEdgesDevice_(nullptr)
@@ -36,48 +36,48 @@ GPUModel::~GPUModel()
 }
 
 /// Allocates  and initializes memories on CUDA device.
-/// @param[out] allVerticesDevice          Memory location of the pointer to the neurons list on device memory.
-/// @param[out] allEdgesDevice         Memory location of the pointer to the synapses list on device memory.
+/// @param[out] allVerticesDevice          Memory location of the pointer to the vertices list on device memory.
+/// @param[out] allEdgesDevice         Memory location of the pointer to the edges list on device memory.
 void GPUModel::allocDeviceStruct(void** allVerticesDevice, void** allEdgesDevice)
 {
-  // Get neurons and synapses
-  shared_ptr<AllVertices> neurons = layout_->getVertices();
-  shared_ptr<AllEdges> synapses = connections_->getEdges();
+  // Get vertices and edges
+  shared_ptr<AllVertices> vertices = layout_->getVertices();
+  shared_ptr<AllEdges> edges = connections_->getEdges();
 
-  // Allocate Neurons and Synapses structs on GPU device memory
-  neurons->allocNeuronDeviceStruct(allVerticesDevice);
-  synapses->allocEdgeDeviceStruct(allEdgesDevice);
+  // Allocate Vertices and Edges structs on GPU device memory
+  vertices->allocNeuronDeviceStruct(allVerticesDevice);
+  edges->allocEdgeDeviceStruct(allEdgesDevice);
 
   // Allocate memory for random noise array
   int numVertices = Simulator::getInstance().getTotalVertices();
   BGSIZE randNoise_d_size = numVertices * sizeof (float);	// size of random noise array
   HANDLE_ERROR( cudaMalloc ( ( void ** ) &randNoise_d, randNoise_d_size ) );
 
-  // Copy host neuron and synapse arrays into GPU device
-  neurons->copyNeuronHostToDevice( *allVerticesDevice );
-  synapses->copyEdgeHostToDevice( *allEdgesDevice );
+  // Copy host vertex and edge arrays into GPU device
+  vertices->copyNeuronHostToDevice( *allVerticesDevice );
+  edges->copyEdgeHostToDevice( *allEdgesDevice );
 
-  // Allocate synapse inverse map in device memory
+  // Allocate edge inverse map in device memory
   allocSynapseImap( numVertices );
 }
 
 /// Copies device memories to host memories and deallocates them.
-/// @param[out] allVerticesDevice          Memory location of the pointer to the neurons list on device memory.
-/// @param[out] allEdgesDevice         Memory location of the pointer to the synapses list on device memory.
+/// @param[out] allVerticesDevice          Memory location of the pointer to the vertices list on device memory.
+/// @param[out] allEdgesDevice         Memory location of the pointer to the edges list on device memory.
 void GPUModel::deleteDeviceStruct(void** allVerticesDevice, void** allEdgesDevice)
 {  
-  // Get neurons and synapses
-  shared_ptr<AllVertices> neurons = layout_->getVertices();
-  shared_ptr<AllEdges> synapses = connections_->getEdges();
+  // Get vertices and edges
+  shared_ptr<AllVertices> vertices = layout_->getVertices();
+  shared_ptr<AllEdges> edges = connections_->getEdges();
 
-  // Copy device synapse and neuron structs to host memory
-  neurons->copyNeuronDeviceToHost( *allVerticesDevice);
+  // Copy device edge and vertex structs to host memory
+  vertices->copyNeuronDeviceToHost( *allVerticesDevice);
   // Deallocate device memory
-  neurons->deleteNeuronDeviceStruct( *allVerticesDevice);
-  // Copy device synapse and neuron structs to host memory
-  synapses->copyEdgeDeviceToHost( *allEdgesDevice);
+  vertices->deleteNeuronDeviceStruct( *allVerticesDevice);
+  // Copy device edge and vertex structs to host memory
+  edges->copyEdgeDeviceToHost( *allEdgesDevice);
   // Deallocate device memory
-  synapses->deleteEdgeDeviceStruct( *allEdgesDevice );
+  edges->deleteEdgeDeviceStruct( *allEdgesDevice );
   HANDLE_ERROR( cudaFree( randNoise_d ) );
 }
 
@@ -112,7 +112,7 @@ void GPUModel::setupSim()
   allocDeviceStruct((void **)&allVerticesDevice_, (void **)&allEdgesDevice_);
 
   // copy inverse map to the device memory
-  copySynapseIndexMapHostToDevice(*(connections_->getEdgeIndexMap().get()), Simulator::getInstance().getTotalVertices());
+  copyEdgeIndexMapHostToDevice(*(connections_->getEdgeIndexMap().get()), Simulator::getInstance().getTotalVertices());
 
   // set some parameters used for advanceVerticesDevice
   layout_->getVertices()->setAdvanceVerticesDeviceParams(*(connections_->getEdges().get()));
@@ -144,9 +144,9 @@ void GPUModel::advance()
   cudaStartTimer();
 #endif // PERFORMANCE_METRICS
 
-  // Get neurons and synapses
-  shared_ptr<AllVertices> neurons = layout_->getVertices();
-  shared_ptr<AllEdges> synapses = connections_->getEdges();
+  // Get vertices and edges
+  shared_ptr<AllVertices> vertices = layout_->getVertices();
+  shared_ptr<AllEdges> edges = connections_->getEdges();
 
   normalMTGPU(randNoise_d);
 
@@ -156,16 +156,16 @@ void GPUModel::advance()
 #endif // PERFORMANCE_METRICS
 
   // display running info to console
-  // Advance neurons ------------->
-   dynamic_cast<AllSpikingNeurons *>(neurons.get())->advanceVertices(*(connections_->getEdges().get()), allVerticesDevice_, allEdgesDevice_, randNoise_d, synapseIndexMapDevice_);
+  // Advance vertices ------------->
+   dynamic_cast<AllSpikingNeurons *>(vertices.get())->advanceVertices(*(connections_->getEdges().get()), allVerticesDevice_, allEdgesDevice_, randNoise_d, edgeIndexMapDevice_);
 
 #ifdef PERFORMANCE_METRICS
   cudaLapTime(t_gpu_advanceNeurons);
   cudaStartTimer();
 #endif // PERFORMANCE_METRICS
 
-  // Advance synapses ------------->
-  synapses->advanceEdges(allEdgesDevice_, allVerticesDevice_, synapseIndexMapDevice_);
+  // Advance edges ------------->
+  edges->advanceEdges(allEdgesDevice_, allVerticesDevice_, edgeIndexMapDevice_);
 
 #ifdef PERFORMANCE_METRICS
   cudaLapTime(t_gpu_advanceSynapses);
@@ -180,7 +180,7 @@ void GPUModel::advance()
 #endif // PERFORMANCE_METRICS
 }
 
-/// Add psr of all incoming synapses to summation points.
+/// Add psr of all incoming edges to summation points.
 void GPUModel::calcSummationMap()
 {
   // CUDA parameters
@@ -188,26 +188,26 @@ void GPUModel::calcSummationMap()
   int blocksPerGrid = ( Simulator::getInstance().getTotalVertices() + threadsPerBlock - 1 ) / threadsPerBlock;
 
   calcSummationMapDevice <<< blocksPerGrid, threadsPerBlock >>> (
-        Simulator::getInstance().getTotalVertices(), allVerticesDevice_, synapseIndexMapDevice_, allEdgesDevice_ );
+        Simulator::getInstance().getTotalVertices(), allVerticesDevice_, edgeIndexMapDevice_, allEdgesDevice_ );
 }
 
-/// Update the connection of all the Neurons and Synapses of the simulation.
+/// Update the connection of all the Vertices and Edges of the simulation.
 void GPUModel::updateConnections()
 {
-  // Get neurons and synapses
-  shared_ptr<AllVertices> neurons = layout_->getVertices();
-  shared_ptr<AllEdges> synapses = connections_->getEdges();
+  // Get vertices and edges
+  shared_ptr<AllVertices> vertices = layout_->getVertices();
+  shared_ptr<AllEdges> edges = connections_->getEdges();
 
-  dynamic_cast<AllSpikingNeurons*>(neurons.get())->copyNeuronDeviceSpikeCountsToHost(allVerticesDevice_);
-  dynamic_cast<AllSpikingNeurons*>(neurons.get())->copyNeuronDeviceSpikeHistoryToHost(allVerticesDevice_);
+  dynamic_cast<AllSpikingNeurons*>(vertices.get())->copyNeuronDeviceSpikeCountsToHost(allVerticesDevice_);
+  dynamic_cast<AllSpikingNeurons*>(vertices.get())->copyNeuronDeviceSpikeHistoryToHost(allVerticesDevice_);
 
   // Update Connections data
-  if (connections_->updateConnections(*(neurons.get()), layout_.get())) {
-    connections_->updateSynapsesWeights(Simulator::getInstance().getTotalVertices(), *(neurons.get()), *(synapses.get()), allVerticesDevice_, allEdgesDevice_, layout_.get());
-    // create synapse index map
+  if (connections_->updateConnections(*(vertices.get()), layout_.get())) {
+    connections_->updateEdgesWeights(Simulator::getInstance().getTotalVertices(), *(vertices.get()), *(edges.get()), allVerticesDevice_, allEdgesDevice_, layout_.get());
+    // create edge index map
     connections_->createEdgeIndexMap();
     // copy index map to the device memory
-    copySynapseIndexMapHostToDevice(*(connections_->getEdgeIndexMap().get()), Simulator::getInstance().getTotalVertices());
+    copyEdgeIndexMapHostToDevice(*(connections_->getEdgeIndexMap().get()), Simulator::getInstance().getTotalVertices());
   }
 }
 
@@ -217,11 +217,11 @@ void GPUModel::updateHistory()
   Model::updateHistory();
   // clear spike count
   
-  shared_ptr<AllVertices> neurons = layout_->getVertices();
-  dynamic_cast<AllSpikingNeurons*>(neurons.get())->clearNeuronSpikeCounts(allVerticesDevice_);
+  shared_ptr<AllVertices> vertices = layout_->getVertices();
+  dynamic_cast<AllSpikingNeurons*>(vertices.get())->clearNeuronSpikeCounts(allVerticesDevice_);
 }
 
-/// Allocate device memory for synapse inverse map.
+/// Allocate device memory for edge inverse map.
 /// @param  count	The number of vertices.
 void GPUModel::allocSynapseImap( int count )
 {
@@ -237,17 +237,17 @@ void GPUModel::allocSynapseImap( int count )
   HANDLE_ERROR( cudaMemset(synapseIMapDevice.incomingEdgeBegin_, 0, count * sizeof( BGSIZE ) ) );
   HANDLE_ERROR( cudaMemset(synapseIMapDevice.incomingEdgeCount_, 0, count * sizeof( BGSIZE ) ) );
 
-  HANDLE_ERROR( cudaMalloc( ( void ** ) &synapseIndexMapDevice_, sizeof( EdgeIndexMap ) ) );
-  HANDLE_ERROR( cudaMemcpy( synapseIndexMapDevice_, &synapseIMapDevice, sizeof( EdgeIndexMap ), 
+  HANDLE_ERROR( cudaMalloc( ( void ** ) &edgeIndexMapDevice_, sizeof( EdgeIndexMap ) ) );
+  HANDLE_ERROR( cudaMemcpy( edgeIndexMapDevice_, &synapseIMapDevice, sizeof( EdgeIndexMap ), 
         cudaMemcpyHostToDevice ) );
 }
 
-/// Deallocate device memory for synapse inverse map.
+/// Deallocate device memory for edge inverse map.
 void GPUModel::deleteSynapseImap(  )
 {
   EdgeIndexMap synapseIMapDevice;
 
-  HANDLE_ERROR( cudaMemcpy ( &synapseIMapDevice, synapseIndexMapDevice_, 
+  HANDLE_ERROR( cudaMemcpy ( &synapseIMapDevice, edgeIndexMapDevice_, 
         sizeof( EdgeIndexMap ), cudaMemcpyDeviceToHost ) );
 
   HANDLE_ERROR( cudaFree( synapseIMapDevice.outgoingEdgeBegin_ ) );
@@ -258,15 +258,15 @@ void GPUModel::deleteSynapseImap(  )
   HANDLE_ERROR( cudaFree( synapseIMapDevice.incomingEdgeCount_ ) );
   HANDLE_ERROR( cudaFree( synapseIMapDevice.incomingEdgeIndexMap_ ) );
 
-  HANDLE_ERROR( cudaFree( synapseIndexMapDevice_ ) );
+  HANDLE_ERROR( cudaFree( edgeIndexMapDevice_ ) );
 }
 
 /// Copy EdgeIndexMap in host memory to EdgeIndexMap in device memory.
 /// @param  synapseIndexMapHost		Reference to the EdgeIndexMap in host memory.
-void GPUModel::copySynapseIndexMapHostToDevice(EdgeIndexMap &synapseIndexMapHost, int numVertices)
+void GPUModel::copyEdgeIndexMapHostToDevice(EdgeIndexMap &synapseIndexMapHost, int numVertices)
 {
-  shared_ptr<AllEdges> synapses = connections_->getEdges();
-  int totalSynapseCount = dynamic_cast<AllEdges*>(synapses.get())->totalEdgeCount_;
+  shared_ptr<AllEdges> edges = connections_->getEdges();
+  int totalSynapseCount = dynamic_cast<AllEdges*>(edges.get())->totalEdgeCount_;
 
   if (totalSynapseCount == 0)
     return;
@@ -274,7 +274,7 @@ void GPUModel::copySynapseIndexMapHostToDevice(EdgeIndexMap &synapseIndexMapHost
   // TODO: rename variable, DevicePointer
   EdgeIndexMap synapseIMapDevice;
 
-  HANDLE_ERROR( cudaMemcpy ( &synapseIMapDevice, synapseIndexMapDevice_, 
+  HANDLE_ERROR( cudaMemcpy ( &synapseIMapDevice, edgeIndexMapDevice_, 
         sizeof( EdgeIndexMap ), cudaMemcpyDeviceToHost ) );
 
   // forward map
@@ -282,7 +282,7 @@ void GPUModel::copySynapseIndexMapHostToDevice(EdgeIndexMap &synapseIndexMapHost
         synapseIndexMapHost.outgoingEdgeBegin_, numVertices * sizeof( BGSIZE ), cudaMemcpyHostToDevice ) );
   HANDLE_ERROR( cudaMemcpy ( synapseIMapDevice.outgoingEdgeCount_, 
         synapseIndexMapHost.outgoingEdgeCount_, numVertices * sizeof( BGSIZE ), cudaMemcpyHostToDevice ) );
-  // the number of synapses may change, so we reallocate the memory
+  // the number of edges may change, so we reallocate the memory
   if (synapseIMapDevice.outgoingEdgeIndexMap_ != nullptr) {
     HANDLE_ERROR( cudaFree( synapseIMapDevice.outgoingEdgeIndexMap_ ) );
   }
@@ -291,12 +291,12 @@ void GPUModel::copySynapseIndexMapHostToDevice(EdgeIndexMap &synapseIndexMapHost
   HANDLE_ERROR( cudaMemcpy ( synapseIMapDevice.outgoingEdgeIndexMap_, synapseIndexMapHost.outgoingEdgeIndexMap_, 
         totalSynapseCount * sizeof( BGSIZE ), cudaMemcpyHostToDevice ) );
 
-  // active synapse map
+  // active edge map
   HANDLE_ERROR( cudaMemcpy ( synapseIMapDevice.incomingEdgeBegin_, 
         synapseIndexMapHost.incomingEdgeBegin_, numVertices * sizeof( BGSIZE ), cudaMemcpyHostToDevice ) );
   HANDLE_ERROR( cudaMemcpy ( synapseIMapDevice.incomingEdgeCount_, 
         synapseIndexMapHost.incomingEdgeCount_, numVertices * sizeof( BGSIZE ), cudaMemcpyHostToDevice ) );
-  // the number of synapses may change, so we reallocate the memory
+  // the number of edges may change, so we reallocate the memory
   if (synapseIMapDevice.incomingEdgeIndexMap_ != nullptr) {
     HANDLE_ERROR( cudaFree( synapseIMapDevice.incomingEdgeIndexMap_ ) );
   }
@@ -305,29 +305,29 @@ void GPUModel::copySynapseIndexMapHostToDevice(EdgeIndexMap &synapseIndexMapHost
   HANDLE_ERROR( cudaMemcpy ( synapseIMapDevice.incomingEdgeIndexMap_, synapseIndexMapHost.incomingEdgeIndexMap_, 
         totalSynapseCount * sizeof( BGSIZE ), cudaMemcpyHostToDevice ) );
 
-  HANDLE_ERROR( cudaMemcpy ( synapseIndexMapDevice_, &synapseIMapDevice, 
+  HANDLE_ERROR( cudaMemcpy ( edgeIndexMapDevice_, &synapseIMapDevice, 
         sizeof( EdgeIndexMap ), cudaMemcpyHostToDevice ) );
 }
 
-/// Calculate the sum of synaptic input to each neuron.
+/// Calculate the sum of synaptic input to each vertex.
 ///
-/// Calculate the sum of synaptic input to each neuron. One thread
-/// corresponds to one neuron. Iterates sequentially through the
-/// forward synapse index map (synapseIndexMapDevice_) to access only
-/// existing synapses. Using this structure eliminates the need to skip
-/// synapses that have undergone lazy deletion from the main
-/// (allEdgesDevice) synapse structure. The forward map is
+/// Calculate the sum of synaptic input to each vertex. One thread
+/// corresponds to one vertex. Iterates sequentially through the
+/// forward edge index map (edgeIndexMapDevice_) to access only
+/// existing edges. Using this structure eliminates the need to skip
+/// edges that have undergone lazy deletion from the main
+/// (allEdgesDevice) edge structure. The forward map is
 /// re-computed during each network restructure (once per epoch) to
-/// ensure that all synapse pointers for a neuron are stored
+/// ensure that all edge pointers for a vertex are stored
 /// contiguously.
 /// 
 /// @param[in] totalVertices           Number of vertices in the entire simulation.
 /// @param[in,out] allVerticesDevice   Pointer to Neuron structures in device memory.
-/// @param[in] synapseIndexMapDevice_  Pointer to forward map structures in device memory.
-/// @param[in] allEdgesDevice      Pointer to Synapse structures in device memory.
+/// @param[in] edgeIndexMapDevice_  Pointer to forward map structures in device memory.
+/// @param[in] allEdgesDevice      Pointer to Edge structures in device memory.
 __global__ void calcSummationMapDevice(int totalVertices, 
 				       AllSpikingNeuronsDeviceProperties* __restrict__ allVerticesDevice, 
-				       const EdgeIndexMap* __restrict__ synapseIndexMapDevice_, 
+				       const EdgeIndexMap* __restrict__ edgeIndexMapDevice_, 
 				       const AllSpikingSynapsesDeviceProperties* __restrict__ allEdgesDevice)
 {
   // The usual thread ID calculation and guard against excess threads
@@ -336,42 +336,42 @@ __global__ void calcSummationMapDevice(int totalVertices,
   if ( idx >= totalVertices )
     return;
 
-  // Number of incoming synapses
-  const BGSIZE synCount = synapseIndexMapDevice_->incomingEdgeCount_[idx];
-  // Optimization: terminate thread if no incoming synapses
+  // Number of incoming edges
+  const BGSIZE synCount = edgeIndexMapDevice_->incomingEdgeCount_[idx];
+  // Optimization: terminate thread if no incoming edges
   if (synCount != 0) {
-    // Index of start of this neuron's block of forward map entries
-    const int beginIndex = synapseIndexMapDevice_->incomingEdgeBegin_[idx];
-    // Address of the start of this neuron's block of forward map entries
+    // Index of start of this vertex's block of forward map entries
+    const int beginIndex = edgeIndexMapDevice_->incomingEdgeBegin_[idx];
+    // Address of the start of this vertex's block of forward map entries
     const BGSIZE* activeMapBegin = 
-      &(synapseIndexMapDevice_->incomingEdgeIndexMap_[beginIndex]);
+      &(edgeIndexMapDevice_->incomingEdgeIndexMap_[beginIndex]);
     // Summed post-synaptic response (PSR)
     BGFLOAT sum = 0.0;
-    // Index of the current incoming synapse
+    // Index of the current incoming edge
     BGSIZE synIndex;
-    // Repeat for each incoming synapse
+    // Repeat for each incoming edge
     for (BGSIZE i = 0; i < synCount; i++) {
-      // Get index of current incoming synapse
+      // Get index of current incoming edge
       synIndex = activeMapBegin[i];
       // Fetch its PSR and add into sum
       sum += allEdgesDevice->psr_[synIndex];
     }
-    // Store summed PSR into this neuron's summation point
+    // Store summed PSR into this vertex's summation point
     allVerticesDevice->summationMap_[idx] = sum;
   }
 }
 
-/// Copy GPU Synapse data to CPU.
+/// Copy GPU Edge data to CPU.
 void GPUModel::copyGPUtoCPU()
 {
-  // copy device synapse structs to host memory
+  // copy device edge structs to host memory
   connections_->getEdges()->copyEdgeDeviceToHost(allEdgesDevice_);
 }
 
-/// Copy CPU Synapse data to GPU.
+/// Copy CPU Edge data to GPU.
 void GPUModel::copyCPUtoGPU()
 {
-  // copy host synapse structs to device memory
+  // copy host edge structs to device memory
   connections_->getEdges()->copyEdgeHostToDevice(allEdgesDevice_);
 }
 

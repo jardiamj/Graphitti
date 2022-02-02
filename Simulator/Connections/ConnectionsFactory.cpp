@@ -14,7 +14,7 @@
 
 /// Constructor is private to keep a singleton instance of this class.
 ConnectionsFactory::ConnectionsFactory() {
-   // register neurons classes
+   // register vertices classes
    registerClass("ConnStatic", &ConnStatic::Create);
    registerClass("ConnGrowth", &ConnGrowth::Create);
    registerClass("Connections911", &Connections911::Create);

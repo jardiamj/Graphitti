@@ -9,26 +9,26 @@
  * This is the base class of all spiking neuron classes.
  *
  * The class uses a data-centric structure, which utilizes a structure as the containers of
- * all neuron.
+ * all vertices.
  *
- * The container holds neuron parameters of all neurons.
- * Each kind of neuron parameter is stored in a 1D array, of which length
- * is number of all neurons. Each array of a neuron parameter is pointed by a
- * corresponding member variable of the neuron parameter in the class.
+ * The container holds neuron parameters of all vertices.
+ * Each kind of vertex parameter is stored in a 1D array, of which length
+ * is number of all vertices. Each array of a vertex parameter is pointed by a
+ * corresponding member variable of the vertex parameter in the class.
  *
  * This structure was originally designed for the GPU implementation of the
  * simulator, and this refactored version of the simulator simply uses that design for
  * all other implementations as well. This is to simplify transitioning from
  * single-threaded to multi-threaded.
  *
- * A standard leaky-integrate-and-fire neuron model is implemented
- * where the membrane potential \f$V_m\f$ of a neuron is given by
+ * A standard leaky-integrate-and-fire vertex model is implemented
+ * where the membrane potential \f$V_m\f$ of a vertex is given by
  * \f[
  *   \tau_m \frac{d V_m}{dt} = -(V_m-V_{resting}) + R_m \cdot (I_{syn}(t)+I_{inject}+I_{noise})
  * \f]
  * where \f$\tau_m=C_m\cdot R_m\f$ is the membrane time constant,
  * \f$R_m\f$ is the membrane resistance, \f$I_{syn}(t)\f$ is the
- * current supplied by the synapses, \f$I_{inject}\f$ is a
+ * current supplied by the edges, \f$I_{inject}\f$ is a
  * non-specific background current and \f$I_{noise}\f$ is a
  * Gaussian random variable with zero mean and a given variance
  * noise.
@@ -77,7 +77,7 @@
 #include "AllIFNeurons.h"
 #include "AllSpikingSynapses.h"
 
-// Class to hold all data necessary for all the Neurons.
+// Class to hold all data necessary for all the Vertices.
 class AllLIFNeurons : public AllIFNeurons {
 public:
 
@@ -90,34 +90,34 @@ public:
    ///  @return Reference to the instance of the class.
    static AllVertices *Create() { return new AllLIFNeurons(); }
 
-   ///  Prints out all parameters of the neurons to logging file.
+   ///  Prints out all parameters of the vertices to logging file.
    ///  Registered to OperationManager as Operation::printParameters
    virtual void printParameters() const override;
 
 #if defined(USE_GPU)
    public:
 
-       ///  Update the state of all neurons for a time step
-       ///  Notify outgoing synapses if neuron has fired.
+       ///  Update the state of all vertices for a time step
+       ///  Notify outgoing edges if vertex has fired.
        ///
-       ///  @param  synapses               Reference to the allEdges struct on host memory.
+       ///  @param  edges               Reference to the allEdges struct on host memory.
        ///  @param  allVerticesDevice       GPU address of the allNeurons struct on device memory.
        ///  @param  allEdgesDevice      GPU address of the allEdges struct on device memory.
        ///  @param  randNoise              Reference to the random noise array.
        ///  @param  edgeIndexMapDevice  GPU address of the EdgeIndexMap on device memory.
-       virtual void advanceVertices(AllEdges &synapses, void* allVerticesDevice, void* allEdgesDevice, float* randNoise, EdgeIndexMap* edgeIndexMapDevice) override;
+       virtual void advanceVertices(AllEdges &edges, void* allVerticesDevice, void* allEdgesDevice, float* randNoise, EdgeIndexMap* edgeIndexMapDevice) override;
 
 #else  // !defined(USE_GPU)
 protected:
 
-   ///  Helper for #advanceNeuron. Updates state of a single neuron.
+   ///  Helper for #advanceNeuron. Updates state of a single vertex.
    ///
-   ///  @param  index Index of the neuron to update.
+   ///  @param  index neuron index to update.
    virtual void advanceNeuron(const int index);
 
-   ///  Initiates a firing of a neuron to connected neurons.
+   ///  Initiates a firing of a vertex to connected vertices.
    ///
-   ///  @param  index Index of the neuron to fire.
+   ///  @param  index neuron index to fire.
    virtual void fire(const int index) const;
 
 #endif // defined(USE_GPU)

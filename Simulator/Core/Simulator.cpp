@@ -112,13 +112,13 @@ void Simulator::printParameters() const {
 }
 
 // Code from STDPFix branch, doesn't do anything
-/// Copy GPU Synapse data to CPU.
+/// Copy GPU Edge data to CPU.
 void Simulator::copyGPUSynapseToCPU() {
    // ToDo: Delete this method and implement using OperationManager
    // model->copyGPUSynapseToCPUModel();
 }
 
-/// Copy CPU Synapse data to GPU.
+/// Copy CPU Edge data to GPU.
 void Simulator::copyCPUSynapseToGPU() {
    // ToDo: Delete this method and implement using OperationManager
    // model->copyCPUSynapseToGPUModel();
@@ -165,13 +165,13 @@ void Simulator::simulate() {
       // Start timer for connection update
       short_timer.start();
 #endif
-      // Update the neuron network
+      // Update the vertex network
       model_->updateConnections();
       model_->updateHistory();
 
 #ifdef PERFORMANCE_METRICS
       // Times converted from microseconds to seconds
-      // Time to update synapses
+      // Time to update edges
       t_host_adjustEdges += short_timer.lap() / 1000000.0;
       // Time since start of simulation
       double total_time = timer.lap() / 1000000.0;
@@ -184,7 +184,7 @@ void Simulator::simulate() {
 }
 
 /// Helper for #simulate(). Advance simulation until ready for next growth cycle.
-/// This should simulate all neuron and synapse activity for one epoch.
+/// This should simulate all vertex and edge activity for one epoch.
 /// @param currentStep the current epoch in which the network is being simulated.
 void Simulator::advanceEpoch(const int &currentEpoch) const {
    uint64_t count = 0;
@@ -278,7 +278,7 @@ int Simulator::getMaxEdgesPerVertex() const { return maxEdgesPerVertex_; } ///  
 
 BGFLOAT Simulator::getDeltaT() const { return deltaT_; }
 
-// ToDo: should be a vector of neuron type
+// ToDo: should be a vector of vertex type
 // ToDo: vector should be contiguous array, resize is used.
 vertexType *Simulator::getRgNeuronTypeMap() const { return rgNeuronTypeMap_; }
 

@@ -15,7 +15,7 @@ AllLIFNeurons::AllLIFNeurons() : AllIFNeurons() {
 AllLIFNeurons::~AllLIFNeurons() {
 }
 
-///  Prints out all parameters of the neurons to logging file.
+///  Prints out all parameters of the vertices to logging file.
 ///  Registered to OperationManager as Operation::printParameters
 void AllLIFNeurons::printParameters() const {
    AllIFNeurons::printParameters();
@@ -26,7 +26,7 @@ void AllLIFNeurons::printParameters() const {
 
 ///  Update internal state of the indexed Neuron (called by every simulation step).
 ///
-///  @param  index       Index of the Neuron to update.
+///  @param  index       neuron index to update.
 void AllLIFNeurons::advanceNeuron(const int index) {
     BGFLOAT &Vm = this->Vm_[index];
     BGFLOAT &Vthresh = this->Vthresh_[index];
@@ -38,7 +38,7 @@ void AllLIFNeurons::advanceNeuron(const int index) {
     int &nStepsInRefr = this->numStepsInRefractoryPeriod_[index];
 
     if (nStepsInRefr > 0) {
-        // is neuron refractory?
+        // is vertex refractory?
         --nStepsInRefr;
     } else if (Vm >= Vthresh) {
         // should it fire?
@@ -69,7 +69,7 @@ void AllLIFNeurons::advanceNeuron(const int index) {
 
 ///  Fire the selected Neuron and calculate the result.
 ///
-///  @param  index       Index of the Neuron to update.
+///  @param  index       neuron index to update.
 void AllLIFNeurons::fire(const int index) const {
     const BGFLOAT deltaT = Simulator::getInstance().getDeltaT();
     AllSpikingNeurons::fire(index);

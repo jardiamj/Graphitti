@@ -19,12 +19,12 @@ In sum, Graphitti is designed to do the following:
 ## 1.3 Why do we need Graphitti?
 
 The initial principles that we are basing Graphitti on are as follows:
-
+[//]: # (ToDo: update this language non-biological simulations)
 - Provide support for common algorithms and data structures needed for biological neural simulation. This includes concepts such as:
-  - *neurons* and *synapses*, which can be dynamical and have internal state that must be initialized, can be updated, and can be serialized and deserialized,
-  - neuron outputs can fan out to multiple synapses,
-  - multiple synapses fan in to single neurons via&nbsp;*summation points*,
-  - neurons have (x, y) spatial coordinates(we could add a z dimension in the future), 
+  - *vertices* and *edges*, which can be dynamical and have internal state that must be initialized, can be updated, and can be serialized and deserialized,
+  - vertex outputs can fan out to multiple edges,
+  - multiple edges fan in to single vertices via&nbsp;*summation points*,
+  - vertices have (x, y) spatial coordinates(we could add a z dimension in the future), 
   - synapses can have individualized transmission delays, and
   - **noise generation**&nbsp;is available to be added to state variables.
 - Be constructred with a design that provides useful metaphors for thinking about simulator implementation in the context of different maching architectures. In other words, if we want to have high performance, we need to expose enough of the underlying machine architecture so that we can take advantage of this. We are not shooting for a high-level tool or language that will give a 2x speedup when one moves one's code to a GPU; we are looking for at least a 20x speedup.

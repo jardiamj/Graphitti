@@ -110,11 +110,11 @@ int Layout911::zone(int index) {
     return (index%10 >= 5) + 2*(index < 50);
 }
 
-///  Returns the type of synapse at the given coordinates
+///  Returns the type of edge at the given coordinates
 ///
-///  @param    srcVertex  integer that points to a Neuron in the type map as a source.
-///  @param    destVertex integer that points to a Neuron in the type map as a destination.
-///  @return type of the synapse.
+///  @param    srcVertex  source vertex index
+///  @param    destVertex destination vertex index
+///  @return type of the edge.
 edgeType Layout911::edgType(const int srcVertex, const int destVertex) {
    if (vertexTypeMap_[srcVertex] == CALR && vertexTypeMap_[destVertex] == PSAP)
       return CP;

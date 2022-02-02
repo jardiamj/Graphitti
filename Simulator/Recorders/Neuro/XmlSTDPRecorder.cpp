@@ -1,6 +1,6 @@
  /*
  *      @file XmlSTDPRecorder.cpp
- *      @brief An implementation for recording weights of synapses for STDP on xml file
+ *      @brief An implementation for recording weights of edges for STDP on xml file
  *      @author Snigdha Singh
  *       @date January 2021
  */
@@ -38,7 +38,7 @@ XmlSTDPRecorder::~XmlSTDPRecorder() {
 ///Init radii and rates history matrices with default values
 void XmlSTDPRecorder::initDefaultValues() {
    shared_ptr<Connections> conns = Simulator::getInstance().getModel()->getConnections();
-  //AllNeuroEdges *synapses synapses)->W_[iSyn]
+  //AllNeuroEdges *edges edges)->W_[iSyn]
    BGFLOAT startRadius = dynamic_cast<ConnStatic *>(conns.get())->getConnsRadiusThresh();
 
 
@@ -57,36 +57,36 @@ void XmlSTDPRecorder::initValues() {
    }
 }
 
-/// Get the current synapse weight information
+/// Get the current edge weight information
 void XmlSTDPRecorder::getValues() {
    Simulator &simulator = Simulator::getInstance();
    shared_ptr<Connections> connections = simulator.getModel()->getConnections();
-   AllEdges &synapses =(*connections->getEdges());
+   AllEdges &edges =(*connections->getEdges());
    const int currentStep = simulator.getCurrentStep();
 
    for (int i = 0; i < simulator.getTotalVertices(); i++) {
-      synapses.W_[i] = weightsHistory_[currentStep][i];
-      synapses.sourceVertexIndex_[i] = sourceNeuronIndexHistory_[currentStep][i];
-      synapses.destVertexIndex_[i] = destNeuronIndexHistory_[currentStep][i];
+      edges.W_[i] = weightsHistory_[currentStep][i];
+      edges.sourceVertexIndex_[i] = sourceNeuronIndexHistory_[currentStep][i];
+      edges.destVertexIndex_[i] = destNeuronIndexHistory_[currentStep][i];
    }
 }
 
 /// Compile history information in every epoch
 ///
-/// @param[in] neurons 	The entire list of neurons.
-void XmlSTDPRecorder::compileHistories(AllVertices &neurons) {
+/// @param[in] vertices 	The entire list of vertices.
+void XmlSTDPRecorder::compileHistories(AllVertices &vertices) {
    LOG4CPLUS_INFO(fileLogger_, "Compiling STDP HISTORY");
-   XmlRecorder::compileHistories(neurons);
+   XmlRecorder::compileHistories(vertices);
    Simulator &simulator = Simulator::getInstance();
    shared_ptr<Connections> connections = simulator.getModel()->getConnections();
-   AllEdges &synapses =(*connections->getEdges());
+   AllEdges &edges =(*connections->getEdges());
    const int currentStep = simulator.getCurrentStep();
 
    for (int iNeuron = 0; iNeuron < simulator.getTotalVertices()*simulator.getMaxEdgesPerVertex(); iNeuron++) {
       // record firing rate to history matrix
-      weightsHistory_[currentStep][iNeuron]= synapses.W_[iNeuron];
-      sourceNeuronIndexHistory_[currentStep][iNeuron]= synapses.sourceVertexIndex_[iNeuron];
-      destNeuronIndexHistory_[currentStep][iNeuron]= synapses.destVertexIndex_[iNeuron];
+      weightsHistory_[currentStep][iNeuron]= edges.W_[iNeuron];
+      sourceNeuronIndexHistory_[currentStep][iNeuron]= edges.sourceVertexIndex_[iNeuron];
+      destNeuronIndexHistory_[currentStep][iNeuron]= edges.destVertexIndex_[iNeuron];
    }
    LOG4CPLUS_INFO(fileLogger_, "Finished Compiling STDP HISTORY");
 }
@@ -143,8 +143,8 @@ string XmlSTDPRecorder::toXML(string name, vector<vector<int>> MatrixToWrite) co
 
 /// Writes simulation results to an output destination.
 ///
-/// @param  neurons the Neuron list to search from.
-void XmlSTDPRecorder::saveSimData(const AllVertices &neurons)
+/// @param  vertices the Neuron list to search from.
+void XmlSTDPRecorder::saveSimData(const AllVertices &vertices)
 {
    Simulator &simulator = Simulator::getInstance();
    
@@ -154,10 +154,10 @@ void XmlSTDPRecorder::saveSimData(const AllVertices &neurons)
       neuronTypes[i] = simulator.getModel()->getLayout()->vertexTypeMap_[i];
    }
 
-   // create neuron threshold matrix
+   // create vertex threshold matrix
    VectorMatrix neuronThresh(MATRIX_TYPE, MATRIX_INIT, 1, simulator.getTotalVertices(), 0);
    for (int i = 0; i < simulator.getTotalVertices(); i++) {
-      neuronThresh[i] = dynamic_cast<const AllIFNeurons &>(neurons).Vthresh_[i];
+      neuronThresh[i] = dynamic_cast<const AllIFNeurons &>(vertices).Vthresh_[i];
    }
 
    // Write XML header information:
@@ -176,7 +176,7 @@ void XmlSTDPRecorder::saveSimData(const AllVertices &neurons)
    resultOut_ << "   " << simulator.getModel()->getLayout()->yloc_->toXML("yloc") << endl;
    resultOut_ << "   " << neuronTypes.toXML("neuronTypes") << endl;
 
-   // create starter neuron matrix
+   // create starter vertex matrix
    int num_starter_neurons = static_cast<int>(simulator.getModel()->getLayout()->numEndogenouslyActiveNeurons_);
    if (num_starter_neurons > 0) {
       VectorMatrix starterNeurons(MATRIX_TYPE, MATRIX_INIT, 1, num_starter_neurons);
@@ -184,7 +184,7 @@ void XmlSTDPRecorder::saveSimData(const AllVertices &neurons)
       resultOut_ << "   " << starterNeurons.toXML("starterNeurons") << endl;
    }
 
-   // Write neuron thresold
+   // Write vertex thresold
    resultOut_ << "   " << neuronThresh.toXML("neuronThresh") << endl;
 
    // write time between growth cycles

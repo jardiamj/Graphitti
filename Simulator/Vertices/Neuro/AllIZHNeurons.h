@@ -9,12 +9,12 @@
  * This is the base class of all spiking neuron classes.
  *
  * The class uses a data-centric structure, which utilizes a structure as the containers of
- * all neuron.
+ * all vertices.
  *
- * The container holds neuron parameters of all neurons.
- * Each kind of neuron parameter is stored in a 1D array, of which length
- * is number of all neurons. Each array of a neuron parameter is pointed by a
- * corresponding member variable of the neuron parameter in the class.
+ * The container holds neuron parameters of all vertices.
+ * Each kind of vertex parameter is stored in a 1D array, of which length
+ * is number of all vertices. Each array of a vertex parameter is pointed by a
+ * corresponding member variable of the vertex parameter in the class.
  *
  * This structure was originally designed for the GPU implementation of the
  * simulator, and this refactored version of the simulator simply uses that design for
@@ -32,10 +32,10 @@
  * with the auxiliary after-spike resetting: if \f$v\ge30\f$ mv, then \f$v=c,u=u+d\f$.
  *
  * where \f$v\f$ and \f$u\f$ are dimensionless variable, and \f$a,b,c\f$, and \f$d\f$ are dimensioless parameters. 
- * The variable \f$v\f$ represents the membrane potential of the neuron and \f$u\f$ represents a membrane 
+ * The variable \f$v\f$ represents the membrane potential of the vertex and \f$u\f$ represents a membrane 
  * recovery variable, which accounts for the activation of \f$K^+\f$ ionic currents and 
  * inactivation of \f$Na^+\f$ ionic currents, and it provides negative feedback to \f$v\f$. 
- * \f$I_{syn}(t)\f$ is the current supplied by the synapses, \f$I_{inject}\f$ is a non-specific 
+ * \f$I_{syn}(t)\f$ is the current supplied by the edges, \f$I_{inject}\f$ is a non-specific 
  * background current and Inoise is a Gaussian random variable with zero mean and 
  * a given variance noise (Izhikevich. 2003).
  *
@@ -76,7 +76,7 @@
 
 struct AllIZHNeuronsDeviceProperties;
 
-// Class to hold all data necessary for all the Neurons.
+// Class to hold all data necessary for all the Vertices.
 class AllIZHNeurons : public AllIFNeurons {
 public:
    AllIZHNeurons();
@@ -86,47 +86,47 @@ public:
    static AllVertices *Create() { return new AllIZHNeurons(); }
 
    ///  Setup the internal structure of the class.
-   ///  Allocate memories to store all neurons' state.
+   ///  Allocate memories to store all vertices' state.
    virtual void setupVertices() override;
 
-   ///  Prints out all parameters of the neurons to logging file.
+   ///  Prints out all parameters of the vertices to logging file.
    ///  Registered to OperationManager as Operation::printParameters
    virtual void printParameters() const override;
 
-   ///  Creates all the Neurons and assigns initial data for them.
+   ///  Creates all the Vertices and assigns initial data for them.
    ///
    ///  @param  layout      Layout information of the neural network.
    virtual void createAllVertices(Layout *layout) override;
 
-   ///  Outputs state of the neuron chosen as a string.
+   ///  Outputs state of the vertex chosen as a string.
    ///
-   ///  @param  index   index of the neuron (in neurons) to output info from.
-   ///  @return the complete state of the neuron.
+   ///  @param  index   neuron index (in vertices) to output info from.
+   ///  @return the complete state of the vertex.
    virtual string toString(const int index) const override;
 
-   ///  Reads and sets the data for all neurons from input stream.
+   ///  Reads and sets the data for all vertices from input stream.
    ///
    ///  @param  input       istream to read from.
    virtual void deserialize(istream &input) override;
 
-   ///  Writes out the data in all neurons to output stream.
+   ///  Writes out the data in all vertices to output stream.
    ///
    ///  @param  output      stream to write out to.
    virtual void serialize(ostream &output) const override;
 
 #if defined(USE_GPU)
    public:
-       ///  Update the state of all neurons for a time step
-       ///  Notify outgoing synapses if neuron has fired.
+       ///  Update the state of all vertices for a time step
+       ///  Notify outgoing edges if vertex has fired.
        ///
-       ///  @param  synapses               Reference to the allEdges struct on host memory.
+       ///  @param  edges               Reference to the allEdges struct on host memory.
        ///  @param  allVerticesDevice       Reference to the allNeurons struct on device memory.
        ///  @param  allEdgesDevice      Reference to the allEdges struct on device memory.
        ///  @param  randNoise              Reference to the random noise array.
        ///  @param  edgeIndexMapDevice  Reference to the EdgeIndexMap on device memory.
-       virtual void advanceVertices(AllEdges &synapses, void* allVerticesDevice, void* allEdgesDevice, float* randNoise, EdgeIndexMap* edgeIndexMapDevice) override;
+       virtual void advanceVertices(AllEdges &edges, void* allVerticesDevice, void* allEdgesDevice, float* randNoise, EdgeIndexMap* edgeIndexMapDevice) override;
 
-       ///  Allocate GPU memories to store all neurons' states,
+       ///  Allocate GPU memories to store all vertices' states,
        ///  and copy them from host to GPU memory.
        ///
        ///  @param  allVerticesDevice   GPU address of the allNeurons struct on device memory.
@@ -137,12 +137,12 @@ public:
        ///  @param  allVerticesDevice   GPU address of the allNeurons struct on device memory.
        virtual void deleteNeuronDeviceStruct( void* allVerticesDevice) override;
 
-       ///  Copy all neurons' data from host to device.
+       ///  Copy all vertices' data from host to device.
        ///
        ///  @param  allVerticesDevice   GPU address of the allNeurons struct on device memory.
        virtual void copyNeuronHostToDevice( void* allVerticesDevice) override;
 
-       ///  Copy all neurons' data from device to host.
+       ///  Copy all vertices' data from device to host.
        ///
        ///  @param  allVerticesDevice   GPU address of the allNeurons struct on device memory.
        virtual void copyNeuronDeviceToHost(void* allVerticesDevice) override;
@@ -157,14 +157,14 @@ public:
        ///  @param  allVerticesDevice   GPU address of the allNeurons struct on device memory.
        virtual void copyNeuronDeviceSpikeCountsToHost( void* allVerticesDevice) override;
 
-       ///  Clear the spike counts out of all neurons.
+       ///  Clear the spike counts out of all vertices.
        ///
        ///  @param  allVerticesDevice   GPU address of the allNeurons struct on device memory.
        virtual void clearNeuronSpikeCounts( void* allVerticesDevice) override;
 
 
    protected:
-       ///  Allocate GPU memories to store all neurons' states.
+       ///  Allocate GPU memories to store all vertices' states.
        ///  (Helper function of allocNeuronDeviceStruct)
        ///
        ///  @param  allVerticesDevice         Reference to the AllIZHNeuronsDeviceProperties struct.
@@ -176,13 +176,13 @@ public:
        ///  @param  allVerticesDevice         Reference to the AllIZHNeuronsDeviceProperties struct.
        void deleteDeviceStruct( AllIZHNeuronsDeviceProperties& allVerticesDevice);
 
-       ///  Copy all neurons' data from host to device.
+       ///  Copy all vertices' data from host to device.
        ///  (Helper function of copyNeuronHostToDevice)
        ///
        ///  @param  allVerticesDevice         Reference to the AllIZHNeuronsDeviceProperties struct.
        void copyHostToDevice( AllIZHNeuronsDeviceProperties& allVerticesDevice);
 
-       ///  Copy all neurons' data from device to host.
+       ///  Copy all vertices' data from device to host.
        ///  (Helper function of copyNeuronDeviceToHost)
        ///
        ///  @param  allVerticesDevice         Reference to the AllIZHNeuronsDeviceProperties struct.
@@ -191,14 +191,14 @@ public:
 #else  // !defined(USE_GPU)
 
 protected:
-   ///  Helper for #advanceNeuron. Updates state of a single neuron.
+   ///  Helper for #advanceNeuron. Updates state of a single vertex.
    ///
-   ///  @param  index            Index of the neuron to update.
+   ///  @param  index            neuron index to update.
    virtual void advanceNeuron(const int index);
 
-   ///  Initiates a firing of a neuron to connected neurons.
+   ///  Initiates a firing of a vertex to connected vertices.
    ///
-   ///  @param  index            Index of the neuron to fire.
+   ///  @param  index            neuron index to fire.
    virtual void fire(const int index) const;
 
 #endif  // defined(USE_GPU)
@@ -206,31 +206,31 @@ protected:
 protected:
    ///  Creates a single Neuron and generates data for it.
    ///
-   ///  @param  neuronIndex Index of the neuron to create.
+   ///  @param  neuronIndex neuron index to create.
    ///  @param  layout       Layout information of the neural network.
    void createNeuron(int neuronIndex, Layout *layout);
 
    ///  Set the Neuron at the indexed location to default values.
    ///
-   ///  @param  index    Index of the Neuron that the synapse belongs to.
+   ///  @param  index    neuron index that the edge belongs to.
    void setNeuronDefaults(const int index);
 
    ///  Initializes the Neuron constants at the indexed location.
    ///
-   ///  @param  neuronIndex    Index of the Neuron.
+   ///  @param  neuronIndex    neuron index.
    ///  @param  deltaT          Inner simulation step duration
    virtual void initNeuronConstsFromParamValues(int neuronIndex, const BGFLOAT deltaT) override;
 
    ///  Sets the data for Neuron #index to input's data.
    ///
    ///  @param  input       istream to read from.
-   ///  @param  index           index of the neuron (in neurons).
+   ///  @param  index           neuron index (in vertices).
    void readNeuron(istream &input, int index);
 
    ///  Writes out the data in the selected Neuron.
    ///
    ///  @param  output      stream to write out to.
-   ///  @param  index           index of the neuron (in neurons).
+   ///  @param  index           neuron index (in vertices).
    void writeNeuron(ostream &output, int index) const;
 
 public:
@@ -265,28 +265,28 @@ private:
    ///  Default value of Dconst.
    static constexpr BGFLOAT DEFAULT_d = 2;
 
-   ///  Min/max values of Aconst for excitatory neurons.
+   ///  Min/max values of Aconst for excitatory vertices.
    BGFLOAT excAconst_[2];
 
-   ///  Min/max values of Aconst for inhibitory neurons.
+   ///  Min/max values of Aconst for inhibitory vertices.
    BGFLOAT inhAconst_[2];
 
-   ///  Min/max values of Bconst for excitatory neurons.
+   ///  Min/max values of Bconst for excitatory vertices.
    BGFLOAT excBconst_[2];
 
-   ///  Min/max values of Bconst for inhibitory neurons.
+   ///  Min/max values of Bconst for inhibitory vertices.
    BGFLOAT inhBconst_[2];
 
-   ///  Min/max values of Cconst for excitatory neurons.
+   ///  Min/max values of Cconst for excitatory vertices.
    BGFLOAT excCconst_[2];
 
-   ///  Min/max values of Cconst for inhibitory neurons.
+   ///  Min/max values of Cconst for inhibitory vertices.
    BGFLOAT inhCconst_[2];
 
-   ///  Min/max values of Dconst for excitatory neurons.
+   ///  Min/max values of Dconst for excitatory vertices.
    BGFLOAT excDconst_[2];
 
-   ///  Min/max values of Dconst for inhibitory neurons.
+   ///  Min/max values of Dconst for inhibitory vertices.
    BGFLOAT inhDconst_[2];
 };
 

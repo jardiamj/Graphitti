@@ -5,6 +5,9 @@
  *
  * @brief The base class of all connections classes
  *
+ * The Connections class is the manager class for Edges and is managed by Model. 
+ * It is responsible for the creation and deletion of edges.
+ * 
  * In graph-based networks, vertices are connected through edges where messages are exchanged.
  * The strength of connections is characterized by edge's weight. 
  * The connections classes define topologies, the way to connect vertices,  
@@ -44,22 +47,22 @@ public:
    ///  Destructor
    virtual ~Connections();
 
-   /// Returns shared pointer to Synapses/Edges 
+   /// Returns shared pointer to edges 
    shared_ptr<AllEdges> getEdges() const;
 
 
    /// Returns a shared pointer to the EdgeIndexMap
    shared_ptr<EdgeIndexMap> getEdgeIndexMap() const;
 
-   /// Calls Synapses to create EdgeIndexMap and stores it as a member variable
+   /// Calls Edges to create EdgeIndexMap and stores it as a member variable
    void createEdgeIndexMap();
 
    ///  Setup the internal structure of the class (allocate memories and initialize them).
    ///
    ///  @param  layout    Layout information of the neural network.
-   ///  @param  neurons   The Neuron list to search from.
-   ///  @param  synapses  The Synapse list to search from.
-   virtual void setupConnections(Layout *layout, AllVertices *vertices, AllEdges *synapses) = 0;
+   ///  @param  vertices   The vertex list to search from.
+   ///  @param  edges  The edge list to search from.
+   virtual void setupConnections(Layout *layout, AllVertices *vertices, AllEdges *edges) = 0;
 
    /// Load member variables from configuration file.
    /// Registered to OperationManager as Operations::op::loadParameters
@@ -71,41 +74,41 @@ public:
    
    ///  Update the connections status in every epoch.
    ///
-   ///  @param  neurons  The Neuron list to search from.
+   ///  @param  vertices  The vertex list to search from.
    ///  @param  layout   Layout information of the neural network.
    ///  @return true if successful, false otherwise.
    virtual bool updateConnections(AllVertices &vertices, Layout *layout);
 
-   ///  Creates synapses from synapse weights saved in the serialization file.
+   ///  Creates edges from edge weights saved in the serialization file.
    ///
    ///  @param  numVertices Number of vertices to update.
    ///  @param  layout      Layout information of the neural network.
-   ///  @param  ineurons    The Neuron list to search from.
-   ///  @param  isynapses   The Synapse list to search from.
-   void createSynapsesFromWeights(const int numVertices, Layout *layout, AllVertices &vertices, AllEdges &synapses);
+   ///  @param  vertices    The vertex list to search from.
+   ///  @param  iedges   The Edge list to search from.
+   void createEdgesFromWeights(const int numVertices, Layout *layout, AllVertices &vertices, AllEdges &edges);
 
 #if defined(USE_GPU)
    public:
-       ///  Update the weight of the Synapses in the simulation.
+       ///  Update the weight of the Edges in the simulation.
        ///  Note: Platform Dependent.
        ///
        ///  @param  numVertices          number of vertices to update.
-       ///  @param  neurons             the Neuron list to search from.
-       ///  @param  synapses            the Synapse list to search from.
+       ///  @param  vertices             the Neuron list to search from.
+       ///  @param  edges            the Edge list to search from.
        ///  @param  allVerticesDevice    GPU address of the allVertices struct on device memory.
        ///  @param  allEdgesDevice   GPU address of the allEdges struct on device memory.
        ///  @param  layout              Layout information of the neural network.
-       virtual void updateSynapsesWeights(const int numVertices, AllVertices &vertices, AllEdges &synapses, AllSpikingNeuronsDeviceProperties* allVerticesDevice, AllSpikingSynapsesDeviceProperties* allEdgesDevice, Layout *layout);
+       virtual void updateEdgesWeights(const int numVertices, AllVertices &vertices, AllEdges &edges, AllSpikingNeuronsDeviceProperties* allVerticesDevice, AllSpikingSynapsesDeviceProperties* allEdgesDevice, Layout *layout);
 #else
 public:
-   ///  Update the weight of the Synapses in the simulation.
+   ///  Update the weight of the Edges in the simulation.
    ///  Note: Platform Dependent.
    ///
    ///  @param  numVertices Number of vertices to update.
    ///  @param  ineurons    The Neuron list to search from.
-   ///  @param  isynapses   The Synapse list to search from.
+   ///  @param  iedges   The Edge list to search from.
    virtual void
-   updateSynapsesWeights(const int numVertices, AllVertices &vertices, AllEdges &synapses, Layout *layout);
+   updateEdgesWeights(const int numVertices, AllVertices &vertices, AllEdges &edges, Layout *layout);
 
 #endif // USE_GPU
 
@@ -113,7 +116,7 @@ protected:
 
    shared_ptr<AllEdges> edges_;
 
-   shared_ptr<EdgeIndexMap> synapseIndexMap_;
+   shared_ptr<EdgeIndexMap> edgeIndexMap_;
 
    log4cplus::Logger fileLogger_;
    log4cplus::Logger edgeLogger_;

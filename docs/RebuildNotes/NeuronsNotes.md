@@ -101,41 +101,6 @@ rng = random number generator
 
 // spike history data structure is being created in createNeuron, but everything else is just init.
 
-
-// all pure initialization.. little bit of alloc. depends on internal neuron stuff and parameters.
-// among all things, some need to be done in particular order, but some
-/*
- *  Initializes the Neuron constants at the indexed location.
- *
- *  @param  neuron_index    Index of the Neuron.
- *  @param  deltaT          Inner simulation step duration
- */
-void AllIFNeurons::initNeuronConstsFromParamValues(int neuron_index, const BGFLOAT deltaT)
-{
-        BGFLOAT &Tau = this->Tau[neuron_index];
-        BGFLOAT &C1 = this->C1[neuron_index];
-        BGFLOAT &C2 = this->C2[neuron_index];
-        BGFLOAT &Rm = this->Rm[neuron_index];
-        BGFLOAT &I0 = this->I0[neuron_index];
-        BGFLOAT &Iinject = this->Iinject[neuron_index];
-        BGFLOAT &Vrest = this->Vrest[neuron_index];
-
-        /* init consts C1,C2 for exponential Euler integration */
-        if (Tau > 0) {
-                C1 = exp( -deltaT / Tau );
-                C2 = Rm * ( 1 - C1 );
-        } else {
-                C1 = 0.0;
-                C2 = Rm;
-        }
-        /* calculate const IO */
-        if (Rm > 0) {
-                I0 = Iinject + Vrest / Rm;
-        }else {
-                assert(false);
-        }
-}
-
 allLIFNeurons doesnt do additional stuff. create all neurons inits everything and allocs one data structure for spikes.
 
 createallneurons could be part of setupneurons.
